@@ -3,34 +3,36 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/person'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/persons'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 CORS(app)  
 
-class Person(db.Model):
+class Persons(db.Model):
     __tablename__ = 'person'
 
     id = db.Column(db.String(13), primary_key=True)
-    name = db.Column(db.String(64), nullable=False)
-    price = db.Column(db.Float(precision=2), nullable=False)
-    availability = db.Column(db.Integer)
+    firstname = db.Column(db.String(64), nullable=False)
+    lastname = db.Column(db.String(64), nullable=False)
+    email = db.Column(db.String(64), nullable=False)
+    gender = db.Column(db.String(10), nullable=False)
 
-    def __init__(self, isbn13, title, price, availability):
-        self.isbn13 = isbn13
-        self.title = title
-        self.price = price
-        self.availability = availability
+    def __init__(self, id, firstname, lastname, email, gender):
+        self.id = id
+        self.firstname = firstname
+        self.lastname = lastname
+        self.email = email
+        self.gender = gender
 
     def json(self):
-        return {"id": self.id, "name": self.name, "price": self.price, "availability": self.availability}
+        return {"id": self.id, "firstname": self.firstname, "lastname": self.lastname, "email": self.email, "gender": self.gender}
 
 
 @app.route("/person")
 def get_all():
-    persons = Person.query.all()
+    persons = Persons.query.all()
     if len(persons):
         return jsonify(
             {
@@ -50,7 +52,7 @@ def get_all():
 
 @app.route("/person/<string:id>")
 def find_by_id(id):
-    person = Person.query.filter_by(id=id).first()
+    person = Persons.query.filter_by(id=id).first()
     if person:
         return jsonify(
             {
@@ -68,7 +70,7 @@ def find_by_id(id):
 
 @app.route("/person/<string:id>", methods=['POST'])
 def create_person(isbn13):
-    if (Person.query.filter_by(id=id).first()):
+    if (Persons.query.filter_by(id=id).first()):
         return jsonify(
             {
                 "code": 400,
@@ -80,7 +82,7 @@ def create_person(isbn13):
         ), 400
 
     data = request.get_json()
-    person = Person(id, **data)
+    person = Persons(id, **data)
 
     try:
         db.session.add(person)
@@ -106,7 +108,7 @@ def create_person(isbn13):
 
 @app.route("/person/<string:id>", methods=['PUT'])
 def update_person(id):
-    person = Person.query.filter_by(id=id).first()
+    person = Persons.query.filter_by(id=id).first()
     if person:
         data = request.get_json()
         if data['title']:
@@ -131,7 +133,7 @@ def update_person(id):
 
 @app.route("/person/<string:id>", methods=['DELETE'])
 def delete_person(id):
-    person = Person.query.filter_by(id=id).first()
+    person = Persons.query.filter_by(id=id).first()
     if person:
         db.session.delete(person)
         db.session.commit()
