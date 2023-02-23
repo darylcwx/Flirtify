@@ -124,7 +124,7 @@ def update_person(id):
             "data": {
                 "id": id
             },
-            "message": "Book not found."
+            "message": "User not found."
         }
     ), 404
 
