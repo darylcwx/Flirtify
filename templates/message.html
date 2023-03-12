@@ -28,10 +28,11 @@
 <div>
     <!-- <form action="/send_message/{user_id}/{match_id}" method="post"> -->
     <form action="/send_message/1/1" method="POST">
-        <label for="content">Name:</label>
+        <label for="content">Message:</label>
         <input type="text" id="content" name="content">
     
         <input type="submit" value="Send Message">
+        {{ success }}
     </form>
     
 </div>

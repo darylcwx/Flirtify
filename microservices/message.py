@@ -42,6 +42,11 @@ def index(match_id):
             }
         all_match_messages.append(message_details)
 
+    redirect_from = request.args.get('redirect_from')
+    if redirect_from:
+        return render_template('message.html', success="Message was successfully sent!")
+    else:
+        return render_template('message.html')
     # return in json format
     # return jsonify({
     #     'id': message.id,
@@ -50,9 +55,7 @@ def index(match_id):
     #     'content': message.content,
     #     })
 
-    return all_match_messages
-
-    # return render_template('message.html')
+    # return all_match_messages
 
 @app.route('/send_message/<user_id>/<match_id>', methods=['POST'])
 def send_message(user_id, match_id):
@@ -73,7 +76,7 @@ def send_message(user_id, match_id):
     success_message = "Message was successfully sent!"
 
     # return render_template('message.html', success=success_message)
-    return redirect(url_for('index', match_id=match_id))
+    return redirect(url_for('index', match_id=match_id, redirect_from='send_message'))
 
 @app.route('/add_table')
 def add_table():
