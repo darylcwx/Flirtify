@@ -1,5 +1,5 @@
 from pyexpat.errors import messages
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, render_template, redirect, url_for
 from cockroachdb.sqlalchemy import run_transaction
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,7 +8,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -50,7 +50,30 @@ def index(match_id):
     #     'content': message.content,
     #     })
 
-    return jsonify(all_match_messages)
+    return all_match_messages
+
+    # return render_template('message.html')
+
+@app.route('/send_message/<user_id>/<match_id>', methods=['POST'])
+def send_message(user_id, match_id):
+    new_message = Message(
+        match_id = match_id,
+        sender_id = user_id,
+        content = request.form['content']
+        )
+
+    try:
+        session.add(new_message)
+        session.commit()
+    except Exception as e:
+        session.rollback()
+        app.logger.error(f"Error committing session: {str(e)}")
+        return "There was an error sending your message. Please try again."
+
+    success_message = "Message was successfully sent!"
+
+    # return render_template('message.html', success=success_message)
+    return redirect(url_for('index', match_id=match_id))
 
 @app.route('/add_table')
 def add_table():
