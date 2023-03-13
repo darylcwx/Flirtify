@@ -7,7 +7,7 @@ conn_params = {
     'user':"jeremy",
     'password':"GvtUwDUhQOYrlDC7jEbblg",
 }
-
+ 
 conn = psycopg.connect(**conn_params)
 
 # Open a cursor to execute SQL commands
