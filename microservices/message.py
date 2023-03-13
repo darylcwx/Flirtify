@@ -33,20 +33,22 @@ def index(match_id):
     messages = session.query(Message).filter(Message.match_id == match_id).all()
 
     all_match_messages = []
-    for message in messages:
-        message_details = {
-            'id': message.id,
-            'match_id': message.match_id,
-            'sender_id': message.sender_id,
-            'content': message.content
-            }
-        all_match_messages.append(message_details)
+    if len(messages):
+        for message in messages:
+            message_details = {
+                'id': message.id,
+                'match_id': message.match_id,
+                'sender_id': message.sender_id,
+                'content': message.content
+                }
+            all_match_messages.append(message_details)
 
     redirect_from = request.args.get('redirect_from')
     if redirect_from:
-        return render_template('message.html', success="Message was successfully sent!")
+        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages)
     else:
-        return render_template('message.html')
+        return render_template('message.html', all_messages=all_match_messages)
+
     # return in json format
     # return jsonify({
     #     'id': message.id,
@@ -56,6 +58,37 @@ def index(match_id):
     #     })
 
     # return all_match_messages
+
+@app.route('/api/get_all_messages/<match_id>')
+def get_messages(match_id):
+    messages = session.query(Message).filter(Message.match_id == match_id).all()
+
+    if len(messages):
+        all_match_messages = []
+        for message in messages:
+                message_details = {
+                    'id': message.id,
+                    'match_id': message.match_id,
+                    'sender_id': message.sender_id,
+                    'content': message.content
+                    }
+                all_match_messages.append(message_details)
+
+        return jsonify(
+                {
+                    "code": 200,
+                    "data": {
+                        "messages": all_match_messages
+                    }
+                }
+            )
+    else:
+        return jsonify(
+                {
+                    "code": 404,
+                    "status_message": "There are no messages."
+                }
+            ), 404
 
 @app.route('/send_message/<user_id>/<match_id>', methods=['POST'])
 def send_message(user_id, match_id):
