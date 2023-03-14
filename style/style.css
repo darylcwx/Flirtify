@@ -3,5 +3,26 @@
 }
 
 @media screen and (max-height = 600px){
-    
+
 }
+
+.person{
+    margin: auto;
+    margin-top: 10%;
+    width: 35%;
+ }   
+
+.person img{
+    padding: 25px;
+    /* width: 40% !important; */
+    /* height: 40% !important; */
+    object-fit: cover;
+    object-position: center;
+    align-items: center;
+}
+
+#more-content{
+    display: none;
+    margin-bottom: 15px;
+}
+
