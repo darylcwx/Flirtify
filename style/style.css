@@ -26,3 +26,10 @@
     margin-bottom: 15px;
 }
 
+table{
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #000;
+    margin: 0;
+    padding: 0;
+}
