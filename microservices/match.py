@@ -30,7 +30,7 @@ class Match(Base):
     user1_match = Column(Boolean, nullable = True)
     user2_match = Column(Boolean, nullable = True)
 
-    dateMatch = Column(Boolean, nullable = True)
+    dateMatch = Column(Boolean, nullable=True)
     dateIdea = Column(ARRAY(String))
 
     def json(self):
@@ -66,7 +66,10 @@ def get_all():
 # problem with this is that it might return a match that has not been verified to be [yes,yes] yet
 @app.route("/match/<string:match_id>")
 def find_by_match_id(match_id):
-    match = Match.query.filter_by(match_id=match_id).first()
+    match = session.query(Match).filter_by(user_id1=match_id).first()
+
+    # there can potentially be people who has appeared as user1 to appear as user2.
+
     if match_id:
         return jsonify(
             {
@@ -85,23 +88,12 @@ def find_by_match_id(match_id):
 @app.route("/match/<string:match_id>", methods=['POST'])
 def create_match(match_id):
 
-    # # SCENARIO 1: just prevent user from creating new match
-    # if (Match.query.filter_by(match_id=match_id).first()):
-    #     return jsonify(
-    #         {
-    #             "code": 400,
-    #             "data": {
-    #                 "match_id": match_id
-    #             },
-    #             "message": "You can only like once"
-    #         }
-    #     ), 400
-
     # SCENARIO 2: Users have yet to like each other yet. So there will be Yes, null for example. But they will still be engaging with the same Match_id
-    match = Match.query.filter_by(match_id=match_id).first()
+    match = session.query(Match).filter_by(match_id=match_id).first()
     if match:
+        # if match, then update
         match = request.get_json()
-        # potentially fucked up this part. 
+
         if match['match_id']:
             match.match_id = match['match_id']
         session.commit()
@@ -114,10 +106,10 @@ def create_match(match_id):
         )
 
     data = request.get_json()
-    match = Match(match_id, **data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
+    match = Match(**data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
 
     try:
-        session.add(match_id)
+        session.add(match)
         session.commit()
     except:
         return jsonify(
@@ -141,7 +133,7 @@ def create_match(match_id):
 # DELETE MATCH - In event of banning
 @app.route("/match/<string:match_id>", methods=['DELETE'])
 def delete_match(match_id):
-    match = Match.query.filter_by(match_id=match_id).first()
+    match = session.query(Match).filter_by(match_id=match_id).first()
     if match:
         session.delete(match)
         session.commit()
@@ -180,24 +172,10 @@ def check_match():
     return jsonify({'result': result})
 
 # check if date match
-
 # NEEDS WORK
 # Question: How to pull from user db?? How to then validate?
 
 
-# @app.route('/check_match', methods=['POST'])
-# def check_match():
-#     data = request.get_json()
-#     # Extract the attributes from the request JSON data
-#     user1_match = data['user1_match']
-#     user2_match = data['user2_match']
-#     # Check if the attributes are equal
-#     if user1_match == user2_match:
-#         result = True
-#     else:
-#         result = False
-#     # Return the result as a JSON response
-#     return jsonify({'result': result})
 
 
 
