@@ -17,6 +17,7 @@ cur = conn.cursor()
 cur.execute("SET DATABASE = flirtify")
 
 res = cur.execute('''
+    DROP TABLE IF EXISTS public.users;
     CREATE TABLE IF NOT EXISTS public.users (
         ID SERIAL PRIMARY KEY,
         firstname VARCHAR(150),
