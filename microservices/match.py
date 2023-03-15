@@ -1,6 +1,7 @@
 from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for
 from cockroachdb.sqlalchemy import run_transaction
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -8,8 +9,11 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/persons'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-app = Flask(__name__, template_folder='../templates')
+db = SQLAlchemy(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -17,21 +21,21 @@ engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-404
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
-# Create a base class for database models
-Base = declarative_base()
-
-class Match(Base):
+class Match(db.Model):
     __tablename__ = 'match'
-    match_id = Column(Integer, primary_key=True, autoincrement=True)
+    match_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     
-    user_id1 = Column(Integer, nullable = False)
-    user_id2 = Column(Integer, nullable = False)
+    user_id1 = db.Column(db.Integer, nullable = False)
+    user_id2 = db.Column(db.Integer, nullable = False)
 
-    user1_match = Column(Boolean, nullable = True)
-    user2_match = Column(Boolean, nullable = True)
+    user1_match = db.Column(db.Boolean, nullable = True)
+    user2_match = db.Column(db.Boolean, nullable = True)
 
-    dateMatch = Column(Boolean, nullable = True)
-    dateIdea = Column(ARRAY(String))
+    dateMatch = db.Column(db.Boolean, nullable = True)
+    dateIdea = db.Column(db.ARRAY(db.String))
+
+    def json(self):
+        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "dateMatch": self.dateMatch, "dateIdea": self.dateIdea}
 
 session = Session()
 
@@ -61,7 +65,7 @@ def get_all():
 
 # specific match
 # problem with this is that it might return a match that has not been verified to be [yes,yes] yet
-@app.route("/match/<integer:match_id>")
+@app.route("/match/<string:match_id>")
 def find_by_match_id(match_id):
     match = Match.query.filter_by(match_id=match_id).first()
     if match_id:
@@ -74,12 +78,12 @@ def find_by_match_id(match_id):
     return jsonify(
         {
             "code": 404,
-            "message": "Book not found."
+            "message": "Match not found."
         }
     ), 404
 
 # create match
-@app.route("/match/<integer:match_id>", methods=['POST'])
+@app.route("/match/<string:match_id>", methods=['POST'])
 def create_match(match_id):
 
     # # SCENARIO 1: just prevent user from creating new match
@@ -101,7 +105,7 @@ def create_match(match_id):
         # potentially fucked up this part. 
         if match['match_id']:
             match.match_id = match['match_id']
-        session.commit()
+        db.session.commit()
 
         return jsonify(
             {
@@ -114,8 +118,8 @@ def create_match(match_id):
     match = Match(match_id, **data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
 
     try:
-        session.add(match_id)
-        session.commit()
+        db.session.add(match_id)
+        db.session.commit()
     except:
         return jsonify(
             {
@@ -136,12 +140,12 @@ def create_match(match_id):
     ), 201
 
 # DELETE MATCH - In event of banning
-@app.route("/book/<string:match_id>", methods=['DELETE'])
-def delete_book(match_id):
+@app.route("/match/<string:match_id>", methods=['DELETE'])
+def delete_match(match_id):
     match = Match.query.filter_by(match_id=match_id).first()
     if match:
-        session.delete(match)
-        session.commit()
+        db.session.delete(match)
+        db.session.commit()
         return jsonify(
             {
                 "code": 200,
@@ -160,6 +164,42 @@ def delete_book(match_id):
             "message": "Match not found."
         }
     ), 404
+
+# check if match match
+@app.route('/check_match', methods=['POST'])
+def check_match():
+    data = request.get_json()
+    # Extract the attributes from the request JSON data
+    user1_match = data['user1_match']
+    user2_match = data['user2_match']
+    # Check if the attributes are equal
+    if user1_match == user2_match:
+        result = True
+    else:
+        result = False
+    # Return the result as a JSON response
+    return jsonify({'result': result})
+
+# check if date match
+
+# NEEDS WORK
+# Question: How to pull from user db?? How to then validate?
+
+
+# @app.route('/check_match', methods=['POST'])
+# def check_match():
+#     data = request.get_json()
+#     # Extract the attributes from the request JSON data
+#     user1_match = data['user1_match']
+#     user2_match = data['user2_match']
+#     # Check if the attributes are equal
+#     if user1_match == user2_match:
+#         result = True
+#     else:
+#         result = False
+#     # Return the result as a JSON response
+#     return jsonify({'result': result})
+
 
 
 if __name__ == '__main__':
