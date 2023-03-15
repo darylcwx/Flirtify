@@ -52,32 +52,40 @@
         <div class="card">
             <img src="../images/flirtify.png" class="card-img-top d-flex justify-content-center" alt="flirtify">
             <div class="card-body">
-                <h5 class="card-title ms-3 fs-5">Name</h5>
-                <p class="card-text ms-3 person-content">Main Description</p>
+                <div class="container">
+                    <div class="row justify-content-between">
+                        <div class="col-4">
+                            <h5 class="card-title fs-5">Wasooz</h5>
+                        </div>
+                        <div class="col-4">
+                            <span class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-end ms-2">94%</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="card-text ms-3 mt-2 person-content">I voted! for ***fool and caching my cp</p>
+                
 
                 <div id="more-content">
                     <!-- use li when using vue to get info -->
-                    <p class="card-text ms-3 person-content">Age: </p>
-                    <p class="card-text ms-3 person-content">Occupation: </p>
-                    <p class="card-text ms-3 person-content">Hobby: </p>
-                    <p class="card-text ms-3 person-content">More Description goes here</p>
+                    <li class="card-text ms-3 person-content">Age: </li>
+                    <li class="card-text ms-3 person-content">Occupation: </li>
+                    <li class="card-text ms-3 person-content">Hobby: </li>
+                    <li class="card-text ms-3 person-content">More Description goes here</li>
                 </div>
 
-                <a href="#" id="read-more" class="fs-6 ms-3 mt-3">Read More</a>
+                <a href="#" id="read-more" class="fs-6 ms-3 mt-3 text-danger-emphasis">Read More</a>
                 
                 <!-- FORM FOR MATCHING -->
                 <form>
                     <div class="container text-center mt-4">
-                        <div class="row align-items-center">
-                        <div class="col">
-                            <button type="button" class="btn btn-secondary">Next</button>
-                        </div>
-                        <div class="col">
-                            <!-- empty col -->
-                        </div>
-                        <div class="col">
-                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#matchModal"><i class="fa-solid fa-heart"></i></button>
-                        </div>
+                        <div class="row justify-content-between">
+                            <div class="col-5">
+                                <!-- BUTTON TRIGGERS THE NEXT CARD -->
+                                <button type="button" class="btn btn-lg btn-secondary">Next</button>
+                            </div>
+                            <div class="col-5">
+                                <button type="button" class="btn btn-lg btn-danger" data-bs-toggle="modal" data-bs-target="#matchModal"><i class="fa-solid fa-heart"></i></button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -87,7 +95,7 @@
                     <div class="modal-dialog">
                       <div class="modal-content">
                         <div class="modal-header">
-                          <h1 class="modal-title fs-5" id="matchModalLabel">Modal title</h1>
+                          <h1 class="modal-title fs-5" id="matchModalLabel">Matched!</h1>
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">

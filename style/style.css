@@ -8,6 +8,7 @@
 
 .person{
     margin: auto;
+    /* Changing the width will change the size of the card */
     width: 35%;
     margin-top: 10%;
  }   
@@ -19,6 +20,10 @@
     object-fit: cover;
     object-position: center;
     align-items: center;
+}
+
+#read-more{
+    color: #cd5864;
 }
 
 #more-content{
