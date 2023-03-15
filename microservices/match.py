@@ -10,10 +10,6 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/persons'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -21,18 +17,21 @@ engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-404
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
-class Match(db.Model):
+# Create a base class for database models
+Base = declarative_base()
+
+class Match(Base):
     __tablename__ = 'match'
-    match_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    match_id = Column(Integer, primary_key=True, autoincrement=True)
     
-    user_id1 = db.Column(db.Integer, nullable = False)
-    user_id2 = db.Column(db.Integer, nullable = False)
+    user_id1 = Column(Integer, nullable = False)
+    user_id2 = Column(Integer, nullable = False)
 
-    user1_match = db.Column(db.Boolean, nullable = True)
-    user2_match = db.Column(db.Boolean, nullable = True)
+    user1_match = Column(Boolean, nullable = True)
+    user2_match = Column(Boolean, nullable = True)
 
-    dateMatch = db.Column(db.Boolean, nullable = True)
-    dateIdea = db.Column(db.ARRAY(db.String))
+    dateMatch = Column(Boolean, nullable = True)
+    dateIdea = Column(ARRAY(String))
 
     def json(self):
         return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "dateMatch": self.dateMatch, "dateIdea": self.dateIdea}
@@ -46,7 +45,7 @@ session = Session()
 # retrieve all matches
 @app.route("/match")
 def get_all():
-    matches = Match.query.all()
+    matches = session.query(Match).all()
     if len(matches):
         return jsonify(
             {
@@ -105,7 +104,7 @@ def create_match(match_id):
         # potentially fucked up this part. 
         if match['match_id']:
             match.match_id = match['match_id']
-        db.session.commit()
+        session.commit()
 
         return jsonify(
             {
@@ -118,8 +117,8 @@ def create_match(match_id):
     match = Match(match_id, **data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
 
     try:
-        db.session.add(match_id)
-        db.session.commit()
+        session.add(match_id)
+        session.commit()
     except:
         return jsonify(
             {
@@ -144,8 +143,8 @@ def create_match(match_id):
 def delete_match(match_id):
     match = Match.query.filter_by(match_id=match_id).first()
     if match:
-        db.session.delete(match)
-        db.session.commit()
+        session.delete(match)
+        session.commit()
         return jsonify(
             {
                 "code": 200,
