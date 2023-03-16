@@ -58,12 +58,12 @@ def json(info):
 
 user_URL = 'http://localhost:5000/person'
 message_URL = 'http://localhost:5001/message'
-match_URL = 'http://localhost:5002/match'
+match_URL = 'http://localhost:5002/match/'
 
-@app.route("/add_report/<string:ids>/<string:category>/<string:message>", methods=["POST"])
+@app.route("/add_report/<string:ids>/<string:category>/<string:message>")
 def add_report(ids, category, message):
-    userid, otherid = ids.split(',')
-    print("\nReceived a report from userID:", userid)
+    userid, otherid, matchid = ids.split(',')
+    print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n category:", category, ", regarding: ", message)
 
     # 1. add report into report database 
     conn_params = {
@@ -75,26 +75,23 @@ def add_report(ids, category, message):
     conn = psycopg.connect(**conn_params)
     cur = conn.cursor()
 
-    cur.execute("INSERT INTO public.report (id, userid, category, message) VALUES ({userid}, {otherid}, {category}, {message})")
-
     # 2. delete match 
-    print('\n-----Invoking match microservice-----')
-    match_result = invoke_http(match_URL, method='DEL', json=report) #change json
-    print('match_result:', match_result)  
+    # print('\n-----Invoking match microservice-----')
 
-    reps = cur.execute("SELECT * from public.report where userid = %s")
+    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    # print('match_result:', match_result)  
+
+    reps = cur.execute("SELECT * from public.report WHERE otherid = {otherid}")
     if len(reps) >= 5:
         # exceeded
         print('\n\n-----Invoking user microservice-----')
-        user_result = invoke_http(user_URL, method="DEL", json=report) #change json
+        user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
         print('user_result:', user_result)   
         report_result = "Number of reports exceeded 5, user deleted"
 
-    else:
+    elif checkMsg(message):
         # havent exceed, increment by 1
-        print('\n\n-----Invoking user microservice-----')
-        user_result = invoke_http(user_URL, method="PUT", json=report) #change json
-        print('user_result:', user_result) 
+        cur.execute("INSERT INTO public.report (id, userid, category, message) VALUES ({userid}, {otherid}, {category}, {message})")
         report_result = "Number of reports increased by 1"
 
     conn.commit()
@@ -126,7 +123,10 @@ def get_reports():
 
 
 def checkMsg(message):
-    pass 
+    check = True
+    categories = ['sexual', 'racist', 'vulgar']
+
+    return check
 
 
 if __name__ == '__main__':
