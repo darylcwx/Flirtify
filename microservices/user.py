@@ -77,7 +77,7 @@ def get_all():
         }
     ), 404
     
-@app.route("/user/<string:gender>")
+@app.route("/user/gender/<string:gender>")
 def get_all_opp_gender(gender):
     user_search = session.query(User).filter_by(gender=gender).all()
     if len(user_search):
