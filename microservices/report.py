@@ -53,7 +53,7 @@ def run_sql(sql):
         
 def json(info):
     result = {'info':info[0]}
-    result = {"userid":info[0][0], "otherid":info[0][1], "category":info[0][2], "message":info[0][3]}
+    result = {"userid":info[0], "otherid":info[1], "category":info[2], "message":info[3]}
     return result
 
 user_URL = 'http://localhost:5000/person'
@@ -65,55 +65,44 @@ def add_report(ids, category, message):
     userid, otherid, matchid = ids.split(',')
     print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n category:", category, ", regarding: ", message)
 
-    # 1. add report into report database 
-    conn_params = {
-        'host':"flirtify-4040.6xw.cockroachlabs.cloud",
-        'port':"26257",
-        'dbname':"flirtify",
-        'user':"jeremy",
-        'password':"GvtUwDUhQOYrlDC7jEbblg",} 
-    conn = psycopg.connect(**conn_params)
-    cur = conn.cursor()
-
-    # 2. delete match 
+    # 1. delete match 
     # print('\n-----Invoking match microservice-----')
 
     # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
     # print('match_result:', match_result)  
 
-    reps = cur.execute("SELECT * from public.report WHERE otherid = {otherid}")
+    # reps = cur.execute("SELECT * from public.report WHERE otherid = %s", (otherid,))
+    reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
     if len(reps) >= 5:
         # exceeded
         print('\n\n-----Invoking user microservice-----')
         user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
         print('user_result:', user_result)   
-        report_result = "Number of reports exceeded 5, user deleted"
+        report_status = "Number of reports exceeded 5, user deleted"
 
     elif checkMsg(message):
         # havent exceed, increment by 1
-        cur.execute("INSERT INTO public.report (id, userid, category, message) VALUES ({userid}, {otherid}, {category}, {message})")
-        report_result = "Number of reports increased by 1"
-
-    conn.commit()
+        get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category, message) VALUES (%s, %s, %s, %s)", (userid, otherid, category, message,))
+        report_status = "Number of reports increased by 1"
 
 
-    result = {"code": 201,
+    report = get_conn().cursor().execute("SELECT * from public.report WHERE userid = %s AND otherid = %s", (userid, otherid, )).fetchone()
+    return jsonify(
+            {
+                "code": 201,
                 "data": {
-                    "report_result": report_result
-                }
+                    "report": json(report),
+                    "status": report_status
+                    }
             }
-    return jsonify(result), result["code"]
+        )
+
 
 @app.route('/reports')
 def get_reports():
     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
     if (reports):
-        return jsonify(
-            {
-                "code": 200,
-                "data": json(reports)
-            }
-        )
+        return jsonify(reports)
     return jsonify(
         {
             "code": 404,
