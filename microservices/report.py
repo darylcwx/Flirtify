@@ -1,83 +1,121 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
 import os, sys
 import psycopg
-
 import requests
 from invokes import invoke_http
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+
+conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
+
+conn_params = {
+    'host':"flirtify-4040.6xw.cockroachlabs.cloud",
+    'port':"26257",
+    'dbname':"flirtify",
+    'user':"jeremy",
+    'password':"GvtUwDUhQOYrlDC7jEbblg",
+}
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
+db = SQLAlchemy(app)
 CORS(app)
+
+# Configure the SQLAlchemy engine to use CockroachDB
+engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+
+# Create a SQLAlchemy session factory to manage database connections
+Session = sessionmaker(bind=engine)
+
+class Report(db.Model):
+    __tablename__ = 'report'
+    
+    userid = db.Column(db.Integer, primary_key=True)
+    otherid = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(256), nullable=False)
+    message = db.Column(db.String(256), nullable=False)
+    
+    def __init__(self, userid, otherid, category, message):
+        self.userid = userid
+        self.otherid = otherid
+        self.category = category
+        self.message = message
+
+def get_conn():
+    conn = psycopg.connect(**conn_params, autocommit=True)
+    return conn
+
+def run_sql(sql):
+    with get_conn() as txn:
+        txn.execute(sql)
+        
+def json(info):
+    result = {'info':info[0]}
+    result = {"userid":info[0], "otherid":info[1], "category":info[2], "message":info[3]}
+    return result
 
 user_URL = 'http://localhost:5000/person'
 message_URL = 'http://localhost:5001/message'
-match_URL = 'http://localhost:5002/match'
+match_URL = 'http://localhost:5002/match/'
 
-@app.route("/add_report", methods=["POST"])
-def add_report():
-    if request.is_json:
-        try:
-            report = request.get_json()
-            print("\nReceived a report in JSON:", report)
+@app.route("/add_report/<string:ids>/<string:category>/<string:message>")
+def add_report(ids, category, message):
+    userid, otherid, matchid = ids.split(',')
+    print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n category:", category, ", regarding: ", message)
 
-            # 1. add report into report database 
-            conn_params = {
-                'host':"flirtify-4040.6xw.cockroachlabs.cloud",
-                'port':"26257",
-                'dbname':"flirtify",
-                'user':"jeremy",
-                'password':"GvtUwDUhQOYrlDC7jEbblg",} 
-            conn = psycopg.connect(**conn_params)
-            cur = conn.cursor()
+    # 1. delete match 
+    # print('\n-----Invoking match microservice-----')
 
-            cur.execute("INSERT INTO public.report (id, userid, category, message) VALUES (%s, %s, %s, %s, %s)")
+    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    # print('match_result:', match_result)  
 
-            # 2. delete match 
-            print('\n-----Invoking match microservice-----')
-            match_result = invoke_http(match_URL, method='DEL', json=report) #change json
-            print('match_result:', match_result)  
+    # reps = cur.execute("SELECT * from public.report WHERE otherid = %s", (otherid,))
+    reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
+    if len(reps) >= 5:
+        # exceeded
+        print('\n\n-----Invoking user microservice-----')
+        user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
+        print('user_result:', user_result)   
+        report_status = "Number of reports exceeded 5, user deleted"
 
-            reps = cur.execute("SELECT * from public.report where userid = %s")
-            if len(reps) >= 5:
-                # exceeded
-                print('\n\n-----Invoking user microservice-----')
-                user_result = invoke_http(user_URL, method="DEL", json=report) #change json
-                print('user_result:', user_result)   
-                report_result = "Number of reports exceeded 5, user deleted"
-
-            else:
-                # havent exceed, increment by 1
-                print('\n\n-----Invoking user microservice-----')
-                user_result = invoke_http(user_URL, method="PUT", json=report) #change json
-                print('user_result:', user_result) 
-                report_result = "Number of reports increased by 1"
-
-            conn.commit()
+    elif checkMsg(message):
+        # havent exceed, increment by 1
+        get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category, message) VALUES (%s, %s, %s, %s)", (userid, otherid, category, message,))
+        report_status = "Number of reports increased by 1"
 
 
-            result = {"code": 201,
-                        "data": {
-                            "report_result": report_result
-                        }
+    report = get_conn().cursor().execute("SELECT * from public.report WHERE userid = %s AND otherid = %s", (userid, otherid, )).fetchone()
+    return jsonify(
+            {
+                "code": 201,
+                "data": {
+                    "report": json(report),
+                    "status": report_status
                     }
-            return jsonify(result), result["code"]
+            }
+        )
 
-        except Exception as e:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
-            print(ex_str)
 
-            return jsonify({
-                "code": 500,
-                "message": "add_report.py internal error: " + ex_str
-            }), 500
+@app.route('/reports')
+def get_reports():
+    reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+    if (reports):
+        return jsonify(reports)
+    return jsonify(
+        {
+            "code": 404,
+            "message": "no reports."
+        }
+    ), 404
 
-    return jsonify({
-        "code": 400,
-        "message": "Invalid JSON input: " + str(request.get_data())
-    }), 400
+
+def checkMsg(message):
+    check = True
+    categories = ['sexual', 'racist', 'vulgar']
+
+    return check
 
 
 if __name__ == '__main__':
