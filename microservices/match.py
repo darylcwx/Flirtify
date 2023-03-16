@@ -8,6 +8,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
+import requests
+import json
 
 app = Flask(__name__)
 
@@ -30,11 +32,11 @@ class Match(Base):
     user1_match = Column(Boolean, nullable = True)
     user2_match = Column(Boolean, nullable = True)
 
-    dateMatch = Column(Boolean, nullable=True)
+    datePrefs = Column(ARRAY(String))
     dateIdea = Column(ARRAY(String))
 
     def json(self):
-        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "dateMatch": self.dateMatch, "dateIdea": self.dateIdea}
+        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "datePrefs": self.datePrefs, "dateIdea": self.dateIdea}
 
 session = Session()
 
@@ -66,11 +68,11 @@ def get_all():
 # problem with this is that it might return a match that has not been verified to be [yes,yes] yet
 @app.route("/match/<string:match_id>")
 def find_by_match_id(match_id):
-    match = session.query(Match).filter_by(user_id1=match_id).first()
+    match = session.query(Match).filter_by(match_id=match_id).first()
 
     # there can potentially be people who has appeared as user1 to appear as user2.
 
-    if match_id:
+    if match:
         return jsonify(
             {
                 "code": 200,
@@ -83,63 +85,6 @@ def find_by_match_id(match_id):
             "message": "Match not found."
         }
     ), 404
-
-# create match
-# @app.route("/match/<string:match_id>", methods=['POST'])
-# def create_match(match_id):
-    
-#     # # SCENARIO 1: just prevent user from creating new match
-#     # if (Match.query.filter_by(match_id=match_id).first()):
-#     #     return jsonify(
-#     #         {
-#     #             "code": 400,
-#     #             "data": {
-#     #                 "match_id": match_id
-#     #             },
-#     #             "message": "You can only like once"
-#     #         }
-#     #     ), 400
-
-#     # SCENARIO 2: Users have yet to like each other yet. So there will be Yes, null for example. But they will still be engaging with the same Match_id
-#     match = Match.query.filter_by(match_id=match_id).first()
-#     if match:
-#         match = request.get_json()
-#         # potentially fucked up this part. 
-#         if match['match_id']:
-#             match.match_id = match['match_id']
-#         session.commit()
-
-#         return jsonify(
-#             {
-#                 "code": 200,
-#                 "data": match.json()
-#             }
-#         )
-
-#     data = request.get_json()
-#     match = Match(match_id, **data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
-
-#     try:
-#         session.add(match_id)
-#         session.commit()
-#     except:
-#         return jsonify(
-#             {
-#                 "code": 500,
-#                 "data": {
-#                     "match_id": match_id
-#                 },
-#                 "message": "An error occurred creating the match. Please try again."
-#             }
-#         ), 500
-
-
-#     return jsonify(
-#         {
-#             "code": 201,
-#             "data": match.json()
-#         }
-#     ), 201
 
 @app.route("/create_match", methods=['POST'])
 def create_match():
@@ -250,13 +195,107 @@ def check_match():
     # Return the result as a JSON response
     return jsonify({'result': result})
 
-# check if date match
-# NEEDS WORK
-# Question: How to pull from user db?? How to then validate?
+
+# new -- populate datePrefs
+@app.route('/populate_dateprefs/<int:match_id>', methods=['POST'])
+def populate_datepref(match_id):
+    match = session.query(Match).filter_by(match_id=match_id).first()
+
+    user1 = match.user_id1
+    user2 = match.user_id2
+
+    dateprefs = []
+    
+    for userid in [user1, user2]:
+        user_data = requests.get("http://localhost:26257/user/{}".format(userid))
+       
+        if user_data.status_code == 200 and 'application/json' in user_data.headers.get('content-type'):
+            json_data = user_data.json()['data']
+
+            for variable in json_data:
+                # Check if the "name" key is present in the dictionary
+                if variable == 'desiredfirstdate':
+                    dateprefs.append(json_data['desiredfirstdate'])
+        else:
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "An error occurred creating the date preference. Date preference was not populated"
+                }
+            )
+
+    if dateprefs != []:
+        try:
+            match.datePrefs = dateprefs
+            # session.query(Match).filter_by(match_id=match_id).first().update({'datePrefs': dateprefs})
+            session.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": match.json()
+                }
+            ), 201
+
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred creating the date preference. Please try again."
+                }
+            ), 500
+
+# new -- populate datePrefs end
 
 
+@app.route('/date_recommendation/<int:match_id>', methods=['POST'])
+def populate_dateIdea(match_id):
+    match = session.query(Match).filter_by(match_id=match_id).first()
 
+    datePrefs = match.datePrefs    
+    dateIdeas = []
 
+    for prefDate in datePrefs:
+        # send a formdata for each of the match
+        url = f"http://localhost:5005/dateidea/{prefDate}"
+        response = requests.get(url)
+
+        # Handle the API response
+        if response.status_code == 200:
+            # Extract the idea from the JSON response
+            idea = response.json()
+
+            # Append the idea to the list of date ideas
+            dateIdeas.append(idea)
+        else:
+            # Handle the error
+            return jsonify(
+                {
+                    "message": "There was an error generating the date idea."
+                }
+            ), 404
+    
+        try:
+            # Return the success message with the populated date ideas
+            match.dateIdea = dateIdeas
+            # session.query(Match).filter_by(match_id=match_id).first().update({'datePrefs': dateprefs})
+            session.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "message": "Date idea successfully populated",
+                    "data": match.json()
+                }
+            ), 201
+
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred creating the date preference. Please try again."
+                }
+            ), 500
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
