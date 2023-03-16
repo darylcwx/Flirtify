@@ -71,7 +71,6 @@ def add_report(ids, category, message):
     # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
     # print('match_result:', match_result)  
 
-    # reps = cur.execute("SELECT * from public.report WHERE otherid = %s", (otherid,))
     reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
     if len(reps) >= 5:
         # exceeded
