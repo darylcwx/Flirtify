@@ -2,6 +2,7 @@ import psycopg
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from sqlalchemy.orm import sessionmaker
 
 conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
 
@@ -24,6 +25,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     firstname = db.Column(db.String(150), nullable=False)
     lastname = db.Column(db.String(150), nullable=False)
+    gender = db.Column(db.String(1), nullable=False)
     birthdate = db.Column(db.Date, nullable=False)
     age = db.Column(db.Integer, nullable=False)
     preferences = db.Column(db.ARRAY(db.String))
@@ -31,9 +33,10 @@ class User(db.Model):
     mbti = db.Column(db.String(4))
     email = db.Column(db.String(256))
     
-    def __init__(self, firstname, lastname, birthdate, age, preferences, desiredFirstDate, mbti, email):
+    def __init__(self, firstname, lastname, gender, birthdate, age, preferences, desiredFirstDate, mbti, email):
         self.firstname = firstname
         self.lastname = lastname
+        self.gender = gender
         self.birthdate = birthdate
         self.age = age
         self.preferences = preferences
@@ -50,7 +53,7 @@ def run_sql(sql):
         txn.execute(sql)
         
 def json(info):
-    result = {"id":info[0], "firstname":info[1], "lastname":info[2], "birthdate":info[3], "age":info[4], "date_joined":info[5], "preferences":info[6], "desiredFirstDate":info[7], "mbti":info[8], "email":info[10]}
+    result = {"id":info[0], "firstname":info[1], "lastname":info[2], "gender":info[3], "birthdate":info[4], "age":info[5], "date_joined":info[6], "preferences":info[7], "desiredFirstDate":info[8], "mbti":info[9], "email":info[10]}
     return result
         
 
@@ -84,6 +87,8 @@ def index():
     query1 = get_conn().cursor().executemany(sql,values)
     app.logger.info('user table set up, test data inputted')
     return "Hello, World!"
+
+session = Session()
 
 @app.route("/user")
 def get_all():
@@ -152,4 +157,4 @@ def create_user(email):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=26257, debug=True)
+    app.run(port=26257, debug=True)
