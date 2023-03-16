@@ -27,7 +27,7 @@ cur.execute('''
         age INT NOT NULL,
         date_joined DATE NOT NULL,
         preferences TEXT[] ,
-        desiredFirstDate TEXT[],
+        desiredFirstDate VARCHAR(256),
         MBTI VARCHAR(4),
         password VARCHAR(64) NOT NULL,
         email VARCHAR(256) NOT NULL
@@ -36,11 +36,11 @@ cur.execute('''
     
 sql = "INSERT INTO public.users (firstname, lastname, gender, birthdate, age, date_joined, preferences, desiredFirstDate, mbti, password, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
-values = [("John", "Smith", "M", "1990-03-09", 30, "2022-08-12", ["sporty", "outdoors"], ["rock-climbing"], "infp", "password123", "johnsmith@gmail.com"),
-("Joel", "Dong", "M", "1942-01-01", 99, "2022-01-01", ["sporty", "outdoors", "gym", "teamfight tactics", "monkey shoulder"], ["rock-climbing", "teamfight tactics", "deadlift competition", "haidilao"], "enfj", "password123", "joeldong@gmail.com"),
-("Jane", "Lee", "F","1999-05-12", 24, "2023-01-12", ["homebody", "indoors"], ["cafe", "arcade"], "intp", "password123", "janelee@gmail.com"),
-("Jada", "Tan", "F", "2001-06-06", 21, "2023-01-12", ["homebody", "indoors", "cooking", "drinking", "spending money", "steak"], ["haidilao"],"infp", "password123", "jadatan@coral.com"),
-("Alison", "Bong", "F", "1999-05-12", 21, "2023-01-12", ["sporty", "indoors"],["crocheting", "deadlift competition"], "enfj", "password123", "abong@bong.com")]
+values = [("John", "Smith", "M", "1990-03-09", 30, "2022-08-12", ["sporty", "outdoors"], "food", "infp", "password123", "johnsmith@gmail.com"),
+("Joel", "Dong", "M", "1942-01-01", 99, "2022-01-01", ["sporty", "outdoors", "gym", "teamfight tactics", "monkey shoulder"], "sporty", "enfj", "password123", "joeldong@gmail.com"),
+("Jane", "Lee", "F","1999-05-12", 24, "2023-01-12", ["homebody", "indoors"], "indoors", "intp", "password123", "janelee@gmail.com"),
+("Jada", "Tan", "F", "2001-06-06", 21, "2023-01-12", ["homebody", "indoors", "cooking", "drinking", "spending money", "steak"], "food","infp", "password123", "jadatan@coral.com"),
+("Alison", "Bong", "F", "1999-05-12", 21, "2023-01-12", ["sporty", "indoors"], "sporty", "enfj", "password123", "abong@bong.com")]
 
 cur.executemany(sql,values)
 
