@@ -9,7 +9,7 @@ conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cock
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
 db = SQLAlchemy(app)
-# CORS(app)
+CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -76,6 +76,25 @@ def get_all():
             "message": "There are no users."
         }
     ), 404
+    
+@app.route("/user/<string:gender>")
+def get_all_opp_gender(gender):
+    user_search = session.query(User).filter_by(gender=gender).all()
+    if len(user_search):
+        return jsonify(
+            {
+                "code": 200,
+                "data": {
+                    "users": [user.json() for user in user_search]
+                }
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "There are no users with that gender."
+        }
+    ), 404
 
 @app.route("/user/<string:userid>")
 def get_user(userid):
@@ -134,6 +153,97 @@ def create_user(email):
     }
     ), 201
 
+@app.route("/user/<string:userid>", methods=['DELETE'])
+def delete_user(userid):
+    user = session.query(User).filter_by(id=userid).first()
+    if user:
+        session.delete(user)
+        session.commit()
+        return jsonify(
+            {
+                "code": 200,
+                "data": {
+                    "id": userid
+                },
+                "message": "User successfully deleted."
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "data": {
+                "id": userid
+            },
+            "message": "User not found."
+        }
+    ), 404
+    
+@app.route("/user/<string:userid>", methods=['PUT'])
+def update_user(userid):
+    user_search = session.query(User).filter_by(id=userid).first()
+    if user_search:
+        data = request.get_json()
+        if data['firstname'] is not None:
+            user_search.firstname = data['firstname']
+        else:
+            data['firstname'] = user_search.firstname
+        if data['lastname'] is not None:
+            user_search.lastname = data['lastname']
+        else:
+            data['lastname'] = user_search.lastname
+        if data['gender'] is not None:
+            user_search.gender = data['gender']
+        else:
+            data['gender'] = user_search.gender
+        if data['birthdate'] is not None:
+            user_search.birthdate = data['birthdate']
+        else:
+            data['birthdate'] = user_search.birthdate
+        if data['age'] is not None:
+            user_search.age = data['age']
+        else:
+            data['age'] = user_search.age
+        if data['date_joined'] is not None:
+            user_search.date_joined = data['date_joined']
+        else:
+            data['date_joined'] = user_search.date_joined
+        if data['preferences'] is not None:
+            user_search.preferences = data['preferences']
+        else:
+            data['preferences'] = user_search.preferences
+        if data['desiredfirstdate'] is not None:
+            user_search.desiredfirstdate = data['desiredfirstdate']
+        else:
+            data['desiredfirstdate'] = user_search.desiredfirstdate
+        if data['mbti'] is not None:
+            user_search.mbti = data['mbti']
+        else:
+            data['mbti'] = user_search.mbti
+        if data['email'] is not None:
+            user_search.email = data['email']
+        else:
+            data['email'] = user_search.email
+        if data['password'] is not None:
+            user_search.password = data['password']
+        else:
+            data['password'] = user_search.password
+        session.commit()
+        return jsonify(
+            {
+                "code": 200,
+                "data": user_search.json()
+            }
+        )
+    return jsonify(
+    {
+        "code": 404,
+        "data": {
+            "id": userid
+        },
+        "message": "User not found."
+    }
+    ), 404
+            
 
 if __name__ == '__main__':
     app.run(port=26257, debug=True)
