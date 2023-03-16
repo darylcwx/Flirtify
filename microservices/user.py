@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
 
@@ -18,6 +19,12 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
 db = SQLAlchemy(app)
 CORS(app)
+
+# Configure the SQLAlchemy engine to use CockroachDB
+engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+
+# Create a SQLAlchemy session factory to manage database connections
+Session = sessionmaker(bind=engine)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -59,33 +66,7 @@ def json(info):
 
 @app.route('/')
 def index():
-    run_sql('''
-    CREATE TABLE IF NOT EXISTS public.users (
-        ID SERIAL PRIMARY KEY,
-        firstname VARCHAR(150) NOT NULL,
-        lastname VARCHAR(150) NOT NULL,
-        birthdate DATE NOT NULL,
-        age INT NOT NULL,
-        gender varchar(1) not null,
-        date_joined DATE NOT NULL,
-        preferences TEXT[] ,
-        desiredFirstDate TEXT[],
-        MBTI VARCHAR(4),
-        pass VARCHAR(64) NOT NULL,
-        email VARCHAR(256) NOT NULL
-    )
-    ''')
     
-    sql = "INSERT INTO public.users (firstname, lastname, gender, birthdate, age, date_joined, preferences, desiredFirstDate, mbti, pass, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-
-    values = [("John", "Smith", "1990-03-09", 30, "2022-08-12", ["sporty", "outdoors"], ["rock-climbing"], "infp", "password123", "johnsmith@gmail.com"),
-              ("Joel", "Dong", "1942-01-01", 99, "2022-01-01", ["sporty", "outdoors", "gym", "teamfight tactics", "monkey shoulder"], ["rock-climbing", "teamfight tactics", "deadlift competition", "haidilao"], "enfj", "password123", "joeldong@gmail.com"),
-               ("Jane", "Lee", "1999-05-12", 24, "2023-01-12", ["homebody", "indoors"], ["cafe", "arcade"], "intp", "password123", "janelee@gmail.com"),
-               ("Jada", "Tan", "F", "2001-06-06", 21, "2023-01-12", ["homebody", "indoors", "cooking", "drinking", "spending money", "steak"], ["haidilao"],"infp", "password123", "jadatan@coral.com"),
-                ("Alison", "Bong", "F", "1999-05-12", 21, "2023-01-12", ["sporty", "indoors"],["crocheting", "deadlift competition"], "enfj", "password123", "abong@bong.com")]
-
-    query1 = get_conn().cursor().executemany(sql,values)
-    app.logger.info('user table set up, test data inputted')
     return "Hello, World!"
 
 session = Session()
