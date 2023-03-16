@@ -58,7 +58,7 @@ users = cur.execute(
 ).fetchall()
 
 print(query2)
-)
+
 for user in users:
     print(user)
 

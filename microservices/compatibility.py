@@ -17,8 +17,8 @@ CORS(app)
 compatibility_URL = "http://localhost:5000/compatibility"
 user_URL = "http://localhost:5001/user"
 
-@app.route("/get_compatibility", methods=['GET'])
-def get_compatibility():
+@app.route("/get_compatibility/<string:user1>", methods=['GET'])
+def get_compatibility(user1id):
     conn_params = {
         'host':"flirtify-4040.6xw.cockroachlabs.cloud",
         'port':"26257",
@@ -29,7 +29,7 @@ def get_compatibility():
     cur = conn.cursor()
 
     # Fetch self
-    cur.execute("SELECT * FROM public.users WHERE id = 1")
+    cur.execute("SELECT * FROM public.users WHERE id = {user1id}")
     user1 = cur.fetchone()
     print(user1)
 
