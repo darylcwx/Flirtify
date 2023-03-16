@@ -13,6 +13,9 @@ CORS(app)
 # remove hard code when live https://rapidapi.com/xtraszone-api-xtraszone-api-default/api/real-love-calculator
 # payment got some issues https://rapidapi.com/AstroMatcherAPI/api/astro-matcher-api
 
+# For testing
+#http://localhost:7000/get_compatibility/848295655836778497/848295655843430401
+
 @app.route("/get_compatibility/<string:user1id>/<string:user2id>", methods=['GET'])
 def get_compatibility(user1id, user2id):
     user_URL = "http://localhost:26257/user"
@@ -107,4 +110,4 @@ def processGetCompatibility(user1, user2):
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) +
           " for getting compatibility...")
-    app.run(host="0.0.0.0", port=5100, debug=True)
+    app.run(host="0.0.0.0", port=7000, debug=True)
