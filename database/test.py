@@ -34,9 +34,6 @@ res = cur.execute('''
     )
     ''')
 
-
-# works until here and creates the table
-
 sql = "INSERT INTO public.users (firstname, lastname, birthdate, age, date_joined, preferences, desiredFirstDate, mbti, pass, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
 
 values = [
@@ -57,8 +54,6 @@ users = cur.execute(
 
 ).fetchall()
 
-print(query2)
-)
 for user in users:
     print(user)
 
