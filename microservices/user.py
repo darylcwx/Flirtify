@@ -63,6 +63,7 @@ def index():
         lastname VARCHAR(150) NOT NULL,
         birthdate DATE NOT NULL,
         age INT NOT NULL,
+        gender varchar(1) not null,
         date_joined DATE NOT NULL,
         preferences TEXT[] ,
         desiredFirstDate TEXT[],
@@ -72,7 +73,7 @@ def index():
     )
     ''')
     
-    sql = "INSERT INTO public.users (firstname, lastname, birthdate, age, date_joined, preferences, desiredFirstDate, mbti, pass, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    sql = "INSERT INTO public.users (firstname, lastname, gender, birthdate, age, date_joined, preferences, desiredFirstDate, mbti, pass, email) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 
     values = [("John", "Smith", "1990-03-09", 30, "2022-08-12", ["sporty", "outdoors"], ["rock-climbing"], "infp", "password123", "johnsmith@gmail.com"),
               ("Joel", "Dong", "1942-01-01", 99, "2022-01-01", ["sporty", "outdoors", "gym", "teamfight tactics", "monkey shoulder"], ["rock-climbing", "teamfight tactics", "deadlift competition", "haidilao"], "enfj", "password123", "joeldong@gmail.com"),
