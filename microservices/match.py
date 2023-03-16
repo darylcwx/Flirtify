@@ -2,7 +2,7 @@ from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for
 from cockroachdb.sqlalchemy import run_transaction
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, null
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
@@ -85,50 +85,129 @@ def find_by_match_id(match_id):
     ), 404
 
 # create match
-@app.route("/match/<string:match_id>", methods=['POST'])
-def create_match(match_id):
+# @app.route("/match/<string:match_id>", methods=['POST'])
+# def create_match(match_id):
+    
+#     # # SCENARIO 1: just prevent user from creating new match
+#     # if (Match.query.filter_by(match_id=match_id).first()):
+#     #     return jsonify(
+#     #         {
+#     #             "code": 400,
+#     #             "data": {
+#     #                 "match_id": match_id
+#     #             },
+#     #             "message": "You can only like once"
+#     #         }
+#     #     ), 400
 
-    # SCENARIO 2: Users have yet to like each other yet. So there will be Yes, null for example. But they will still be engaging with the same Match_id
-    match = session.query(Match).filter_by(match_id=match_id).first()
-    if match:
-        # if match, then update
-        match = request.get_json()
+#     # SCENARIO 2: Users have yet to like each other yet. So there will be Yes, null for example. But they will still be engaging with the same Match_id
+#     match = Match.query.filter_by(match_id=match_id).first()
+#     if match:
+#         match = request.get_json()
+#         # potentially fucked up this part. 
+#         if match['match_id']:
+#             match.match_id = match['match_id']
+#         session.commit()
 
-        if match['match_id']:
-            match.match_id = match['match_id']
-        session.commit()
+#         return jsonify(
+#             {
+#                 "code": 200,
+#                 "data": match.json()
+#             }
+#         )
 
-        return jsonify(
-            {
-                "code": 200,
-                "data": match.json()
-            }
+#     data = request.get_json()
+#     match = Match(match_id, **data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
+
+#     try:
+#         session.add(match_id)
+#         session.commit()
+#     except:
+#         return jsonify(
+#             {
+#                 "code": 500,
+#                 "data": {
+#                     "match_id": match_id
+#                 },
+#                 "message": "An error occurred creating the match. Please try again."
+#             }
+#         ), 500
+
+
+#     return jsonify(
+#         {
+#             "code": 201,
+#             "data": match.json()
+#         }
+#     ), 201
+
+@app.route("/create_match", methods=['POST'])
+def create_match():
+    
+    #hidden form data 
+
+    #person deciding
+    user_chooser_id = request.form['user_chooser_id']
+
+    #person that is recommended
+    user_suggested_id = request.form['user_suggested_id']
+
+    #yes or no decision
+    decision_form = request.form['decision']
+    if decision_form == 1:
+        decision = True
+    else:
+        decision = False
+
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    
+    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
+
+    #checking if match with this 2 users exists
+    if (chooser_as_user2_match and suggested_as_user1_match):
+        chooser_as_user2_match.user2_match = decision
+        
+        try:
+            session.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": chooser_as_user2_match.json()
+                }
+            ), 201
+
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred updating the match. Please try again."
+                }
+            ), 500
+    else:
+        new_match = Match(
+            user_id1 = user_chooser_id,
+            user_id2 = user_suggested_id,
+            user1_match = decision
         )
+        try:
+            session.add(new_match)
+            session.commit()
 
-    data = request.get_json()
-    match = Match(**data) #**data is a "common idiom" that allows an arbitrary number of arguments to a function. in this case, all attributes received from request is sent.
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": new_match.json()
+                }
+            ), 201
 
-    try:
-        session.add(match)
-        session.commit()
-    except:
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "match_id": match_id
-                },
-                "message": "An error occurred creating the match. Please try again."
-            }
-        ), 500
-
-
-    return jsonify(
-        {
-            "code": 201,
-            "data": match.json()
-        }
-    ), 201
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred creating the match. Please try again."
+                }
+            ), 500
 
 # DELETE MATCH - In event of banning
 @app.route("/match/<string:match_id>", methods=['DELETE'])
