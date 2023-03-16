@@ -28,7 +28,7 @@ class User(db.Model):
     age = db.Column(db.Integer, nullable=False)
     date_joined = db.Column(db.Date)
     preferences = db.Column(db.ARRAY(db.String))
-    desiredfirstdate = db.Column(db.ARRAY(db.String))
+    desiredfirstdate = db.Column(db.String)
     mbti = db.Column(db.String(4))
     email = db.Column(db.String(256))
     password = db.Column(db.String)
