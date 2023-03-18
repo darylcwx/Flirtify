@@ -1,6 +1,7 @@
 from pyexpat.errors import messages
-from flask import Flask, jsonify, request, render_template, redirect, url_for
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from cockroachdb.sqlalchemy import run_transaction
+from numpy import mat
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -9,6 +10,7 @@ from sqlalchemy.orm import relationship
 
 
 app = Flask(__name__, template_folder='../templates')
+app.secret_key = 'flirtify_esd_micro'
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -26,11 +28,14 @@ class Message(Base):
     sender_id = Column(Integer, nullable=False)
     content = Column(String, nullable=False)
 
-session = Session()
+session_db = Session()
 
 @app.route('/get_all_messages/<match_id>')
 def index(match_id):
-    messages = session.query(Message).filter(Message.match_id == match_id).all()
+    session['user_id'] = 1
+    logged_in_user = session['user_id']
+
+    messages = session_db.query(Message).filter(Message.match_id == match_id).all()
 
     all_match_messages = []
     if len(messages):
@@ -45,9 +50,9 @@ def index(match_id):
 
     redirect_from = request.args.get('redirect_from')
     if redirect_from:
-        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages)
+        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages, user_id=logged_in_user, match_id=match_id)
     else:
-        return render_template('message.html', all_messages=all_match_messages)
+        return render_template('message.html', all_messages=all_match_messages, user_id=logged_in_user, match_id=match_id)
 
     # return in json format
     # return jsonify({
@@ -61,7 +66,7 @@ def index(match_id):
 
 @app.route('/api/get_all_messages/<match_id>')
 def get_messages(match_id):
-    messages = session.query(Message).filter(Message.match_id == match_id).all()
+    messages = session_db.query(Message).filter(Message.match_id == match_id).all()
 
     if len(messages):
         all_match_messages = []
@@ -77,9 +82,7 @@ def get_messages(match_id):
         return jsonify(
                 {
                     "code": 200,
-                    "data": {
-                        "messages": all_match_messages
-                    }
+                    "messages": all_match_messages
                 }
             )
     else:
@@ -99,10 +102,10 @@ def send_message(user_id, match_id):
         )
 
     try:
-        session.add(new_message)
-        session.commit()
+        session_db.add(new_message)
+        session_db.commit()
     except Exception as e:
-        session.rollback()
+        session_db.rollback()
         app.logger.error(f"Error committing session: {str(e)}")
         return "There was an error sending your message. Please try again."
 
@@ -120,9 +123,9 @@ def add_table():
 @app.route('/add_message')
 def add_message():
     #add message to table
-    new_message = Message(match_id=1, sender_id=1, content="Hello this is a test entry")
-    session.add(new_message)
-    session.commit()
+    new_message = Message(match_id=1, sender_id=1, content="Hello wassup")
+    session_db.add(new_message)
+    session_db.commit()
 
     return "message added successfully"
 

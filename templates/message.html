@@ -23,58 +23,252 @@
     
         <!-- VueJS -->
         <script src="https://unpkg.com/vue@next"></script>
-    
+
+        <!-- Axios -->
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        
+        <style>
+            .chat {
+                /* width: 300px; */
+                /* border: solid 1px #EEE; */
+                /* display: flex; */
+                /* flex-direction: column; */
+                padding: 10px;
+            }
+
+            .messages {
+                margin-top: 30px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .message {
+                border-radius: 20px;
+                padding: 8px 15px;
+                margin-top: 5px;
+                margin-bottom: 5px;
+                display: inline-block;
+            }
+
+            .yours {
+                align-items: flex-start;
+            }
+
+            .yours .message {
+                margin-right: 25%;
+                background-color: #eee;
+                position: relative;
+            }
+
+            .yours .message.last:before {
+                content: "";
+                position: absolute;
+                z-index: 0;
+                bottom: 0;
+                left: -7px;
+                height: 20px;
+                width: 20px;
+                background: #eee;
+                border-bottom-right-radius: 15px;
+            }
+            .yours .message.last:after {
+                content: "";
+                position: absolute;
+                z-index: 1;
+                bottom: 0;
+                left: -10px;
+                width: 10px;
+                height: 20px;
+                background: white;
+                border-bottom-right-radius: 10px;
+            }
+
+            .mine {
+                align-items: flex-end;
+            }
+
+            .mine .message {
+                color: white;
+                margin-left: 25%;
+                background: linear-gradient(to bottom, #e9235e 0%, #e00747 100%);
+                background-attachment: fixed;
+                position: relative;
+            }
+
+            .mine .message.last:before {
+                content: "";
+                position: absolute;
+                z-index: 0;
+                bottom: 0;
+                right: -8px;
+                height: 20px;
+                width: 20px;
+                background: linear-gradient(to bottom, #e9235e 0%, #e00747 100%);
+                background-attachment: fixed;
+                border-bottom-left-radius: 15px;
+            }
+
+            .mine .message.last:after {
+                content: "";
+                position: absolute;
+                z-index: 1;
+                bottom: 0;
+                right: -10px;
+                width: 10px;
+                height: 20px;
+                background: white;
+                border-bottom-left-radius: 10px;
+            }
+
+            .report a {
+                text-decoration: none;
+                color: rgba(136, 136, 136, 0.596);
+            }
+
+            .report a:hover {
+                color: #000;
+                transition-duration: 0.4s;
+            }
+        </style>
     </head>
 <body>
 
-<div id = 'app' class = 'container-fluid'>
+<div class="container-fluid" style="min-height: calc(100% - 140px); padding-bottom: 120px; box-sizing: border-box; margin-bottom: 40px;">
+
+      <div class="row chat">
+        <div class="col-3"></div>
+        <div id="all-messages" class="col-6">
+            {% for message in all_messages %}
+                {% if message.sender_id == user_id %}
+                    <div class="mine messages">
+                        <div class="message last">
+                            {{ message.content }}
+                        </div>
+                        <small class="report"><a href="">report</a></small>
+                    </div>
+                {% else %}
+                    <div class="yours messages">
+                        <div class="message last">
+                            {{ message.content }}
+                        </div>
+                        <small class="report"><a href="">report</a></small>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col-3"></div>
+    </div>
 
 </div>
 
-<div>
-    <!-- <form action="/send_message/{user_id}/{match_id}" method="post"> -->
-    <form action="/send_message/1/1" method="POST">
-        <label for="content">Message:</label>
-        <input type="text" id="content" name="content">
-    
-        <input type="submit" value="Send Message">
-        <br>
-        {{ success }}
-        <br>
-        {{ all_messages[1].content }}
-    </form>
-    
+<div id = 'app' class = 'container-fluid' style="position: fixed; bottom: 0px; background-color: #fff; z-index: 999; min-height: 140px;">
+    <div class="row mb-3">
+        <div class="col-3">
+
+        </div>
+        <div class="col-6">
+            <form action="/send_message/1/1" method="POST" class="needs-validation" novalidate>
+                <div class="my-5">
+                    <div class="row">
+                        <div class="col-10">
+                            <input type="text" id="content" name="content" class="form-control" placeholder="send your best pickup here!" required>
+                            <div class="invalid-feedback">
+                                Message cannot be empty!
+                            </div>
+                            {{ success }}
+                        </div>
+                        <div class="col-2 text-end">
+                            <button type="submit" class="btn btn-outline-danger">Send</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </form>
+        </div>
+        <div class="col-3">
+            
+        </div>
+    </div>
 </div>
-
-
-<script>
-
-    const app = Vue.createApp(
-        {
-            data(){
-                return {
-                }
-            },
-
-            methods : {
-
-            },
-
-            mounted() {
-
-            },
-
-            computed : {
-                
-            }
-        }
-    );
-
-    app.mount("#app"); 
-
-</script>
     
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
 
+<script>
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (() => {
+    'use strict'
+
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    const forms = document.querySelectorAll('.needs-validation')
+
+    // Loop over them and prevent submission
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+        }, false)
+    })
+    })()
+
+    function reload_messages() {
+
+        const segments = new URL(window.location.href).pathname.split('/');
+        const last = segments.pop() || segments.pop();
+
+        var url = "/api/get_all_messages/" + last;
+        axios.get(url)
+            .then(response => {
+                var data_messages = response.data.messages;
+                var data_messages_count = data_messages.length;
+
+                var messages_elements = document.getElementById('all-messages');
+                var count_messages = document.getElementsByClassName("messages").length;
+
+                if (data_messages_count != count_messages) {
+                    for (var i = count_messages; i < data_messages_count; i++) {
+                        var new_msg_content_element = document.createElement("div");
+                        new_msg_content_element.classList.add("message", "last");
+                        new_msg_content_element.innerHTML =  data_messages[i].content;
+
+                        var new_msg_element = document.createElement("div");
+                        new_msg_element.classList.add("messages");
+
+                        if (data_messages[i].sender_id == {{ user_id }}) {
+                            new_msg_element.classList.add("mine");
+                        }
+                        else {
+                            new_msg_element.classList.add("yours");
+                        }
+
+                        var new_report_element = document.createElement("small")
+                        new_report_element.classList.add("report")
+
+                        var new_report_a = document.createElement("a")
+                        new_report_a.href = ""
+                        new_report_a.innerHTML = "report"
+                        new_report_element.append(new_report_a)
+
+                        new_msg_element.append(new_msg_content_element);
+                        new_msg_element.append(new_report_element)
+
+                        messages_elements.append(new_msg_element)
+                    }
+                }
+            })
+            .catch(error => {
+                console.log(error.message)
+            });
+
+        setTimeout(reload_messages, 2000);
+    }
+
+    reload_messages()
+
+
+</script>
 </body>
 </html>
