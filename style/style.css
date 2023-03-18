@@ -22,6 +22,11 @@
     align-items: center;
 }
 
+.account-details{
+    right: 50px;
+    position: absolute !important;
+}
+
 #read-more{
     color: #cd5864;
 }
