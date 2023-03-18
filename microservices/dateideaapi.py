@@ -8,24 +8,57 @@ api = Api(app)
 dates = {
     'prefFirstDate': 
     {'sporty': 
-            ['go to the gym',
-            'play tennis']
+            ['Go to the gym with each other',
+            'Play tennis with each other',
+            'Go for a run at the park with each other!',
+            'Go rock-climbing with each other',
+            'Visit the trampoline park with each other',
+            'Go for a hike at Bukit Timah Hill']
         ,
         'artistic':
-            ['try painting',
-            'go to the museum']
+            ['Try painting together',
+            'Visit the Arts and Science museum',
+            'Visit the Singapore Arts Museum',
+            'Visit Artbox with each other']
         ,
         'adventurous':
-            ['go scuba diving',
-            'go sky-diving']
+            ['Go for a hike at Bukit Timah Hill',
+            'Go rock-climbing with each other',
+            "Visit the St John's Island with each other",
+            "Visit Pulau Ubin with each other"]
         ,
         'animalLover':
-            ['visit the zoo',
-            'visit a dog cafe']
+            ['Visit the zoo',
+            'Visit a dog cafe',
+            'Visit Jurong Bird Park',
+            'Volunteer at SPCA for a day']
         ,
         'foody':
-            ['visit a cafe',
-            'try vietnamese food']
+            ['Visit a cafe!',
+            'Try Vietnamese food!',
+            'Visit Artbox together',
+            'Visit TipoSG together',
+            'Have KBBQ together'
+            ]
+        ,
+        'movies':
+            ['Watch Everything All Together At Once together!',
+            'Go on a Harry Potter movie marathon',
+            'Watch the Avengers together',
+            'Catch the latest movie at the cinema!']
+        ,
+        'indoors':
+            ["Play a board game with each other at MindCafe",
+             "Play Cards Against Humanity together",
+             "Visit the library with each other",
+             "Watch a movie at the cinema with each other",
+             "Play video games with each other"]
+        ,
+        'gaming':
+            ["Play Valorant with each other!",
+             "Play League of Legends with each other!",
+             "Play Overwatch 2 with each other!",
+             "Play Teamfight Tactics with each other!"]
     }
 }
 
