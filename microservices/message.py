@@ -64,6 +64,10 @@ def index(match_id):
 
     # return all_match_messages
 
+@app.context_processor
+def inject_navbar():
+    return dict(navbar="header.html")
+
 @app.route('/api/get_all_messages/<match_id>')
 def get_messages(match_id):
     messages = session_db.query(Message).filter(Message.match_id == match_id).all()
