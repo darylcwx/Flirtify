@@ -27,6 +27,10 @@
     position: absolute !important;
 }
 
+.score{
+    right: 20px;
+}
+
 #read-more{
     color: #cd5864;
 }
