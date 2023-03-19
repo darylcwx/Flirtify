@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.orm import sessionmaker
@@ -6,13 +6,13 @@ from sqlalchemy import create_engine
 
 conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
 db = SQLAlchemy(app)
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
@@ -55,6 +55,7 @@ class User(db.Model):
 def index():
     
     return "Hello, World!"
+    # return render_template('home.html')
 
 session = Session()
 
@@ -243,6 +244,10 @@ def update_user(userid):
         "message": "User not found."
     }
     ), 404
+
+@app.context_processor
+def inject_navbar():
+    return dict(navbar="navbar.html")
             
 
 if __name__ == '__main__':

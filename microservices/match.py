@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 import requests
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
@@ -296,6 +296,10 @@ def populate_dateIdea(match_id):
                     "message": "An error occurred creating the date preference. Please try again."
                 }
             ), 500
+        
+@app.context_processor
+def inject_navbar():
+    return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)

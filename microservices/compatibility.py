@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
 from invokes import invoke_http
 import requests
@@ -6,7 +6,7 @@ import json
 import os
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 CORS(app)
 
 # https://rapidapi.com/ajith/api/love-calculator/
@@ -14,7 +14,7 @@ CORS(app)
 # payment got some issues https://rapidapi.com/AstroMatcherAPI/api/astro-matcher-api
 
 # For testing
-#http://localhost:7000/get_compatibility/848295655836778497/848295655843430401
+#http://localhost:7000/get_compatibility/848395333569937409/848395333575245825
 
 @app.route("/get_compatibility/<string:user1id>/<string:user2id>", methods=['GET'])
 def get_compatibility(user1id, user2id):
