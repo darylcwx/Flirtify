@@ -66,7 +66,7 @@ def index(match_id):
 
 @app.context_processor
 def inject_navbar():
-    return dict(navbar="header.html")
+    return dict(navbar="navbar.html")
 
 @app.route('/api/get_all_messages/<match_id>')
 def get_messages(match_id):
