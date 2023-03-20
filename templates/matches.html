@@ -24,6 +24,9 @@
         <!-- VueJS -->
         <script src="https://unpkg.com/vue@next"></script>
 
+        <!-- AXIOS -->
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     </head>
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -54,41 +57,70 @@
         </div>
     </nav>
 
-<body id="app" class="container-fluid">
+<body>
+    <div id="app" class="container-fluid">
 
-    <!-- IF NO MATCHES -->
-    <div class="text-center mt-5">
-        <h1>You have no matches <b>YET</b>!</h1>
-        <form action="home.html">
-            <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
-        </form>
+        <!-- IF NO MATCHES -->
+        <div class="text-center mt-5" v-if="matchesResult.length == 0">
+            <h1>You have no matches <b>YET</b>!</h1>
+            <form action="../templates/home.html">
+                <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
+            </form>
+        </div>
+
+        <!-- IF MATCHES -->
+        <div class="text-center mt-5" v-else>
+            <h1>Here are your matches!</h1>
+
+        </div>
+        <table class="d-flex justify-content-center mt-5">
+            <tr>
+                <th></th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Actions</th>
+            </tr>
+            <tr v-for="item in matchesResult">
+                <td><img id="profilePic" src="../images/flirtify-logo.png" alt="Profile Picture"></td>
+                <!-- <td>Username</td> -->
+                <td>{{ item.user_id2 }}</td>
+                <td>{{ item.age }}</td>
+                <td>
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
+                    </button>
+                    
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                            ...
+                            </div>
+                            <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                            <!-- <button type="button" class="btn btn-primary">Date Ideas</button> -->
+                            <!-- <button type="button" class="btn btn-primary">Report</button> -->
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    
+                
+                </td>
+                <td>
+                    <!-- Tag match_id to each button -->
+                    <button type="button" class="btn btn-danger">Message <i class="fa-regular fa-message"></i></button>
+                </td>
+            </tr>
+        </table>
     </div>
-
-    <!-- IF MATCHES -->
-    <div class="text-center mt-5">
-        <h1>Here are your matches!</h1>
-
-    </div>
-    <!-- <table class="d-flex justify-content-center mt-5">
-        <tr>
-            <th>Profile Picture</th>
-            <th>Username</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Location</th>
-            <th>Match Date</th>
-            <th>Message</th>
-        </tr>
-        <tr>
-            <td><img src="../images/profile-pic.png" alt="Profile Picture" width="50" height="50"></td>
-            <td>Username</td>
-            <td>Age</td>
-            <td>Gender</td>
-            <td>Location</td>
-            <td>Match Date</td>
-            <td><button type="button" class="btn btn-primary">Message</button></td>
-        </tr>
-    </table> -->
 
 
 <script>
@@ -96,34 +128,76 @@
     // var user_id = session['user_id'];
 
     //for testing
-    var user_id = "101";
+    var user_id = "849412270214119425";
 
     const app = Vue.createApp(
         {
             data(){
+
+                // Matches Data
+                // matchesResult is the array that will be used to display the matches using match microservice
+                // matchesInfo is the array that will be used to store the information of the matches that accesses user.py microservice
+
                 return {
-                    result : "",
+                    matchesResult : [],
+                    matchesInfo: {}
                 }
             },
 
             methods : {
                 getMatches() {
-            axios.get();
-            fetch(
-              "http://localhost:5002/successful_match/" + user_id
-            )
-              .then((response) => response.json())
-              .then((data) => {
-                // Getting the compatibility score from compatiblility microservice
-                this.result = data;
-                console.log(data)
-              });
-          },
+                    axios.get();
+                    fetch(
+                    //   "http://localhost:5002/successful_match/" + user_id
+                    "http://localhost:5002/successful_match/849412270214119425" 
+                    )
+                    .then((response) => response.json())
+                    .then((data) => {
+                        // Getting the successful matches from a user_id
+                        this.matchesData = data['data'];
+                        console.log(this.matchesData);
+                        console.log("============")
+                        // console.log(this.matchesData);
+                        //Iterate through the successful matches and push them into the table
+                        if (this.matchesData.length > 0){
+                            for (var i = 0; i < this.matchesData.length; i++) {
+                                this.matchesResult.push(this.matchesData[i]);
+                                console.log(this.matchesResult);
+                                
+                                let matchUser1 = this.matchesData[i]['user_id1'];
+
+                                // Checking for the user_id that is not the current user
+                                if (matchUser1 == user_id){
+                                    this.matchesInfo[this.matchesData[i]['user_id2']] = {};
+                                    this.getUserInfo(this.matchesData[i]['user_id2']);
+                                } else{
+                                    this.matchesInfo[this.matchesData[i]['user_id1']] = {};
+                                    this.getUserInfo(this.matchesData[i]['user_id1']);
+                                }
+                            }
+                        } else{
+                            console.log("No matches");
+                            this.matchesResult = 0;
+                        }
+                    });
+                },
+
+                getUserInfo(userId){
+                    axios.get()
+                    fetch(
+                        "http://localhost:26257/user/${userId}}"
+                    )
+                    .then((response) => response.json())
+                    .then((data) =>{
+                        console.log(data['data'])
+                    })
+                }
 
             },
 
             mounted() {
-
+                this.getMatches();
+                this.getUserInfo();
             },
 
             computed : {
