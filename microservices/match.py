@@ -335,7 +335,6 @@ def populate_dateIdea(match_id):
             return jsonify(
                 {
                     "code": 201,
-                    "message": "Date idea successfully populated",
                     "data": match.json()
                 }
             ), 201
@@ -344,7 +343,7 @@ def populate_dateIdea(match_id):
             return jsonify(
                 {
                     "code": 500,
-                    "message": "An error occurred creating the date preference. Please try again."
+                    "message": "An error occurred creating the date idea. Please try again."
                 }
             ), 500
         
