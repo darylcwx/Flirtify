@@ -5,6 +5,7 @@ import requests
 import json
 import os
 from datetime import datetime
+import random
 
 app = Flask(__name__, template_folder='../templates')
 CORS(app)
@@ -14,18 +15,47 @@ CORS(app)
 # payment got some issues https://rapidapi.com/AstroMatcherAPI/api/astro-matcher-api
 
 # For testing
-#http://localhost:7000/get_compatibility/848395333569937409/848395333575245825
+#http://localhost:7000/get_compatibility/849412270219001857/3
 
-@app.route("/get_compatibility/<string:user1id>/<string:user2id>", methods=['GET'])
-def get_compatibility(user1id, user2id):
+@app.route("/get_compatibility/<string:user1id>/<int:num>", methods=['GET'])
+def get_compatibility(user1id, num):
     user_URL = "http://localhost:26257/user"
     #====================================================================
     # ACCESS USER MICROSERVICE TO GET USER OBJECTS
-    user1 = invoke_http(user_URL + "/" + user1id, method='GET')["data"]
-    user2 = invoke_http(user_URL + "/" + user2id, method='GET')["data"]
+    user1 = invoke_http(user_URL + "/" + user1id, method='GET')
+    users = invoke_http(user_URL, method='GET')
+    if user1["code"] == 500 or users["code"] == 500:
+        return user1
+    elif user1["code"] == 404 or users["code"] == 404:
+        return jsonify(
+            {
+                "code": 404,
+                "message": "User(s) not found."
+            }
+        ), 404
+    user1 = user1["data"]
+    users = users["data"]["users"]
+    random.shuffle(users)
     #====================================================================
-    result = processGetCompatibility(user1, user2)
-    return jsonify(result), result["code"]
+    # user different gender and not already queued.
+    try:
+        result = { "code": "201", "data" : []}
+        queued = []
+        count = 0
+        for user in users:
+            if count == num:
+                break
+            if user["gender"] != user1["gender"] and user not in queued:
+                user2 = user
+                queued.append(user)
+                res = processGetCompatibility(user1, user2)
+                result["data"].append(res)
+            count += 1
+    except Exception as e:
+        result = { "code": "500", "message": "Internal server error occurred. Please try again later."}
+    return jsonify(result)
+    #====================================================================
+    #====================================================================
 
 def processGetCompatibility(user1, user2):
     name1 = user1["firstname"] + " " + user1["lastname"] 
@@ -34,17 +64,14 @@ def processGetCompatibility(user1, user2):
     bd2 = user2["birthdate"]
     mbti1 = user1["mbti"]
     mbti2 = user2["mbti"]
-    if "NF" in mbti1 and "SJ" in mbti2 or "NF" in mbti2 and "SJ" in mbti1:
-        mbti = 75
-    elif "STJ" in mbti1 and "SFJ" in mbti2 or "STJ" in mbti2 and "SFJ" in mbti1 or "NF" in mbti1 and "NF" in mbti2:
-        mbti = 60
-    else:
-        mbti = 50
-    print("==================")
-    print(user1)
-    print("==================")
-    print(user2)
-    print("==================")
+    pref1 = user1["preferences"]
+    pref2 = user2["preferences"]
+    
+    # print("==================")
+    # print(user1)
+    # print("==================")
+    # print(user2)
+    # print("==================")
 
     # 1. Love Calculator API from RapidAPI:
     url = "https://love-calculator.p.rapidapi.com/getPercentage"
@@ -92,17 +119,33 @@ def processGetCompatibility(user1, user2):
         "X-RapidAPI-Host": "astro-matcher-api.p.rapidapi.com"
     }
     response = requests.request("GET", url, headers=headers, params=querystring)
-    # payment method issue, but returned dict is as below
+    # free api, but limited calls. can't use bc payment method issue, but by right the returned dict is hardcoded below
     print("API 3: " + response.text) 
     dict = {"type": "ok","result": {"attraction": 62,"emotion": 66,"mental": 64,"endurability": 81,"lifePath": 50,"children": 66,"overall": 70}
     }
     result3 = dict["result"]["overall"]
 
     # 4. Algorithm defined here
-    compatibility_result = str(round(((int(result1) + int(result2) + int(result3)) + mbti) / 4,2)) + "%"
+    if "NF" in mbti1 and "SJ" in mbti2 or "NF" in mbti2 and "SJ" in mbti1:
+        mbti = 80
+    elif "STJ" in mbti1 and "SFJ" in mbti2 or "STJ" in mbti2 and "SFJ" in mbti1 or "NF" in mbti1 and "NF" in mbti2:
+        mbti = 70
+    else:
+        mbti = 60
+
+    maxPref = max(len(pref1), len(pref2))
+    prefCount = 0
+    for i in pref1:
+        if i in pref2:
+            prefCount += 1
+    prefScore = min(50, prefCount/maxPref * 100)
+
+    compatibility_result = str(round(((int(result1) + int(result2) + int(result3) + prefScore) + mbti) / 5,2)) + "%"
     return {
         "code": 201,
         "data": {
+            "user1": user1,
+            "user2": user2,
             "compatibility_result": compatibility_result
         }
     }

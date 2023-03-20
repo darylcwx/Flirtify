@@ -12,8 +12,7 @@ db = SQLAlchemy(app)
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
-
+engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
