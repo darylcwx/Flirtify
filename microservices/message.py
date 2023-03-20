@@ -28,6 +28,20 @@ class Message(Base):
     sender_id = Column(Integer, nullable=False)
     content = Column(String, nullable=False)
 
+    def __init__(self, match_id, sender_id, content):
+        self.match_id = match_id
+        self.sender_id = sender_id
+        self.content = content
+
+    def json(self):
+        result = {
+            'id'        : self.id,
+            'match_id'  : self.match_id,
+            'sender_id' : self.sender_id,
+            'content'   : self.content
+        }
+        return result
+
 session_db = Session()
 
 @app.route('/get_all_messages/<match_id>')
