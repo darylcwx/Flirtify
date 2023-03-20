@@ -1,5 +1,6 @@
 from pyexpat.errors import messages
-from flask import Flask, jsonify, request, render_template, redirect, url_for
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from flask_cors import CORS
 from cockroachdb.sqlalchemy import run_transaction
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, null
@@ -12,6 +13,7 @@ import requests
 import json
 
 app = Flask(__name__, template_folder='../templates')
+CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
