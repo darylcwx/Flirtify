@@ -58,9 +58,9 @@
               <div class="col-4">
                 <h5 class="card-title fs-5">Wasooz</h5>
               </div>
-              <div class="col-2">
+              <div class="col-3">
                 <div
-                  class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-end score">
+                  class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
                     {{result}}
                 </div>
               </div>
@@ -196,8 +196,8 @@
           return {
             // matches: []
             result : "",
-            // user1id: ""
-            // user2id: ""
+            // userName: "",
+            // userMatches: ""
           };
         },
 
@@ -213,24 +213,42 @@
         },
 
         methods: {
-          getAll() {
+          getCompatScore() {
             axios.get();
             fetch(
               "http://localhost:7100/get_compatibility/848395333569937409/848395333575245825"
             //   "http://localhost:7100/get_compatibility/"+this.user1id+"/"+user2id+"
+            //   "http://localhost:7100/get_compatibility/<current user id>/<number of people>"
             )
               .then((response) => response.json())
               .then((data) => {
-                
-                // console.log(data['data']['compatibility_result']);
-                this.result = data['data']['compatibility_result']
-                console.log(this.result)
+                // Getting the compatibility score from compatiblility microservice
+                this.result = Math.round(parseInt(data['data']['compatibility_result']));
+                this.result = this.result.toString() + "%";
+                console.log(this.result);
               });
           },
+
+          getUserDetails() {
+           // Getting the user details from user microservice
+           axios.get();
+            fetch(
+              "http://127.0.0.1:26257/user"
+            // "http://127.0.0.1:26257/user" + this.user1id;
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                // Getting the compatibility score from compatiblility microservice
+                this.result = Math.round(parseInt(data['data']['compatibility_result']));
+                this.result = this.result.toString() + "%";
+                console.log(this.result);
+              });
+          }
         },
 
         mounted() {
-          this.getAll();
+            this.getUserDetails();
+            this.getCompatScore();
         },
 
         computed: {},
