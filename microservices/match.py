@@ -35,8 +35,10 @@ class Match(Base):
     datePrefs = Column(ARRAY(String))
     dateIdea = Column(ARRAY(String))
 
+    # dateMatch = Column(Date, nullable = True)
+
     def json(self):
-        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "datePrefs": self.datePrefs, "dateIdea": self.dateIdea}
+        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "datePrefs": self.datePrefs, "dateIdea": self.dateIdea} #to include: "date":self.date
 
 session = Session()
 
@@ -96,9 +98,38 @@ def find_successful_matches(user_id):
     # if matches means swiped - or have created match
     if matches:
         #filter out successful matches
-        # sm1 = session.query(Match).filter(Match.user1_match == "true", Match.user2_match == "true") #for now, it just filters out all successful matches
+        ##### COMPUTATIONALLY TAXING ###############
+        # then we populate the datepref and dateidea
 
-        # successful_matches = sm1.union(m1).union(m2).all()
+        for match in matches:
+            # populate dates with date ideas and stuff
+            matchid = match.match_id
+
+            # only if no null, then we start populating
+            if ((match.datePrefs == null) or (match.dateIdea == null)):
+                try:
+                    requests.post("http://localhost:5002/populate_dateprefs/{}".format(matchid))
+
+                    try:
+                        requests.post("http://localhost:5002/date_recommendation/{}".format(matchid))
+
+                    except:
+                        return jsonify(
+                            {
+                                "code": 500,
+                                "message": "An error occurred populating the date recommendation. Please try again."
+                            }
+                        ), 500
+
+                except:
+                    return jsonify(
+                        {
+                            "code": 500,
+                            "message": "An error occurred creating the date preference. Please try again."
+                        }
+                    ), 500
+
+        # else return
         return jsonify(
             {
                 "code": 200,
@@ -164,6 +195,12 @@ def create_match():
         chooser_as_user2_match.user2_match = decision
         
         try:
+            # # add a date field here
+            # chooser_as_user2_match.dateMatch = date.today.strftime('%d/%m/%Y')
+
+            # # can also populate the datePref and dateIdea here
+            # # call the two urls
+
             session.commit()
 
             return jsonify(
