@@ -17,6 +17,28 @@ CORS(app)
 # For testing
 #http://localhost:7000/get_compatibility/849412270219001857/3
 
+#====================================================================
+#====================================================================
+import pika
+RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
+
+#hostname = "localhost"
+port = 5672
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
+channel = connection.channel()
+
+# Declare Exchange
+channel.exchange_declare(exchange='profiles_topic', exchange_type="topic", durable=True)
+
+# Declare and bind Queue
+channel.queue_declare(queue='profiles', durable=True)
+channel.queue_bind(exchange='profiles_topic', queue='profiles') 
+
+
+
+#====================================================================
+#====================================================================
+
 @app.route("/get_compatibility/<string:user1id>/<int:num>", methods=['GET'])
 def get_compatibility(user1id, num):
     user_URL = "http://localhost:26257/user"
@@ -40,20 +62,38 @@ def get_compatibility(user1id, num):
     # user different gender and not already queued.
     try:
         result = { "code": "201", "data" : []}
+        # forAMQP = { "code": "201", "data" : []}
         queued = []
-        count = 0
         for user in users:
-            if count == num:
+            print(user["firstname"])
+            if len(queued) == num:
                 break
-            if user["gender"] != user1["gender"] and user not in queued:
+            if user["id"] != user1["id"] and user["gender"] != user1["gender"] and user not in queued:
                 user2 = user
                 queued.append(user)
                 res = processGetCompatibility(user1, user2)
                 result["data"].append(res)
-            count += 1
+
+                # splitting up result, return 1 now, send the rest to AMQP
+                # if len(queued) == 0:
+                #    result["data"].append(res)
+                # else:
+                #     forAMQP = { "code": "201", "data" : []}
+                #     forAMQP["data"].append(res)
+                # break
+
     except Exception as e:
         result = { "code": "500", "message": "Internal server error occurred. Please try again later."}
+    
+    # return 1, the rest AMQP (need remove from above result["data"])
+    if num > 1:
+        # change result in body to forAMQP
+        channel.basic_publish(exchange='profiles_topic', routing_key='', body=json.dumps(result), properties=pika.BasicProperties(delivery_mode = 2))
+
+    # for now,
     return jsonify(result)
+    
+    
     #====================================================================
     #====================================================================
 
@@ -67,11 +107,13 @@ def processGetCompatibility(user1, user2):
     pref1 = user1["preferences"]
     pref2 = user2["preferences"]
     
-    # print("==================")
-    # print(user1)
-    # print("==================")
-    # print(user2)
-    # print("==================")
+    print("==================")
+    print("==================")
+    print("==================")
+    print(user1)
+    print("==================")
+    print(user2)
+    
 
     # 1. Love Calculator API from RapidAPI:
     url = "https://love-calculator.p.rapidapi.com/getPercentage"
@@ -141,6 +183,7 @@ def processGetCompatibility(user1, user2):
     prefScore = min(50, prefCount/maxPref * 100)
 
     compatibility_result = str(round(((int(result1) + int(result2) + int(result3) + prefScore) + mbti) / 5,2)) + "%"
+    print("Compat result = " + compatibility_result)
     return {
         "code": 201,
         "data": {
