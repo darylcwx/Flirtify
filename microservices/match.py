@@ -86,6 +86,26 @@ def find_by_match_id(match_id):
         }
     ), 404
 
+# get all matches for a unique user
+@app.route("/matches/<int:user_id>")
+def find_matches_by_user_id(user_id):
+    matches = session.query(Match).filter(or_(Match.user_id1 == user_id, Match.user_id2 == user_id)).all()
+
+    if matches:
+        return jsonify(
+            {
+                "code": 200,
+                "data": [match.json() for match in matches]
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "Matches not found for user_id: {}".format(user_id)
+        }
+    ), 404
+
+
 @app.route("/create_match", methods=['POST'])
 def create_match():
     
