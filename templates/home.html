@@ -96,7 +96,7 @@
             I voted! for ***fool and caching my cp
           </p>
 
-          <div id="more-content">
+          <div id="more-content" style="display: none;">
             <ul>
                 <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
                 <li>Prefers: 
@@ -177,20 +177,6 @@
     </div>
 
     <script>
-      document
-        .getElementById("read-more")
-        .addEventListener("click", function () {
-          event.preventDefault();
-          moreContent = document.getElementById("more-content");
-          if (moreContent.style.display === "none") {
-            moreContent.style.display = "block";
-            this.innerHTML = "Read Less";
-          } else {
-            moreContent.style.display = "none";
-            this.innerHTML = "Read More";
-          }
-        });
-
       // Querying the microservices
       const app = Vue.createApp({
         data() {
@@ -271,6 +257,20 @@
       });
 
       app.mount("#app");
+
+      document
+        .getElementById("read-more")
+        .addEventListener("click", function(event) {
+          event.preventDefault();
+          moreContent = document.getElementById("more-content");
+          if (moreContent.style.display == "none") {
+            moreContent.style.display = "block";
+            this.innerHTML = "Read Less";
+          } else {
+            moreContent.style.display = "none";
+            this.innerHTML = "Read More";
+          }
+        });
     </script>
 
     <script
