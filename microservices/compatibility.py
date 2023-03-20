@@ -28,11 +28,11 @@ connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOS
 channel = connection.channel()
 
 # Declare Exchange
-channel.exchange_declare(exchange='profiles_topic', exchange_type="topic", durable=True)
+channel.exchange_declare(exchange='profiles_direct', exchange_type="direct", durable=True)
 
-# Declare and bind Queue
+# Declare and bind Queue 
 channel.queue_declare(queue='profiles', durable=True)
-channel.queue_bind(exchange='profiles_topic', queue='profiles') 
+channel.queue_bind(exchange='profiles_direct', queue='profiles') 
 
 
 
@@ -65,7 +65,6 @@ def get_compatibility(user1id, num):
         # forAMQP = { "code": "201", "data" : []}
         queued = []
         for user in users:
-            print(user["firstname"])
             if len(queued) == num:
                 break
             if user["id"] != user1["id"] and user["gender"] != user1["gender"] and user not in queued:
@@ -88,7 +87,7 @@ def get_compatibility(user1id, num):
     # return 1, the rest AMQP (need remove from above result["data"])
     if num > 1:
         # change result in body to forAMQP
-        channel.basic_publish(exchange='profiles_topic', routing_key='', body=json.dumps(result), properties=pika.BasicProperties(delivery_mode = 2))
+        channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(result), properties=pika.BasicProperties(delivery_mode = 2))
 
     # for now,
     return jsonify(result)
@@ -107,12 +106,12 @@ def processGetCompatibility(user1, user2):
     pref1 = user1["preferences"]
     pref2 = user2["preferences"]
     
-    print("==================")
-    print("==================")
-    print("==================")
-    print(user1)
-    print("==================")
-    print(user2)
+    # print("==================")
+    # print("==================")
+    # print("==================")
+    # print(user1)
+    # print("==================")
+    # print(user2)
     
 
     # 1. Love Calculator API from RapidAPI:
@@ -183,7 +182,6 @@ def processGetCompatibility(user1, user2):
     prefScore = min(50, prefCount/maxPref * 100)
 
     compatibility_result = str(round(((int(result1) + int(result2) + int(result3) + prefScore) + mbti) / 5,2)) + "%"
-    print("Compat result = " + compatibility_result)
     return {
         "code": 201,
         "data": {
