@@ -41,9 +41,35 @@
     
   </head>
 
-  {% include 'navbar.html' % }
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="home.html">
+            <img src="https://github.com/darylcwx/Flirtify/blob/main/images/flirtify-logo.png?raw=true" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
+            <span class="fs-4">Flirtify</span>
+          </a>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="home.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="matches.html">Matches</a>
+          </li>
+          <li class="nav-item dropdown account-details" style="position: absolute !important; right: 50px;">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Account
+            </a>
+            <ul class="dropdown-menu me-4">
+              <li><a class="dropdown-item" href="#">Login / Signup</a></li>
+              <li><a class="dropdown-item" href="#">Logout</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+</nav>
 
-  <body id="app""">
+  <body id="app">
     <!-- MATCH CARD -->
     <div class="person">
       <div class="card">
@@ -56,12 +82,12 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col-4">
-                <h5 class="card-title fs-5">Wasooz</h5>
+                <h5 class="card-title fs-5"> {{ matchName }}</h5>
               </div>
               <div class="col-3">
                 <div
                   class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
-                    {{result}}
+                    {{ compatScore }}
                 </div>
               </div>
             </div>
@@ -71,18 +97,17 @@
           </p>
 
           <div id="more-content">
-            <!-- use li when using vue to get info -->
-            <li class="card-text ms-3 person-content">Age:</li>
-            <li class="card-text ms-3 person-content">Occupation:</li>
-            <li class="card-text ms-3 person-content">Hobby:</li>
-            <li class="card-text ms-3 person-content">
-              More Description goes here
-            </li>
+            <ul>
+                <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
+                <li>Prefers: 
+                    <ul>
+                        <li v-for="item in matchPreferences">{{ item }}</li>
+                </li>
+            </ul>
+
           </div>
 
-          <a href="#" id="read-more" class="fs-6 ms-3 mt-3 text-danger-emphasis"
-            >Read More</a
-          >
+          <a href="#" id="read-more" class="fs-6 ms-3 mt-3">Read More</a>
 
           <!-- FORM FOR MATCHING -->
           <form>
@@ -150,11 +175,8 @@
         </div>
       </div>
     </div>
-    
-    <!-- <div id="app" class="container-fluid">{{ result }}</div> -->
 
     <script>
-
       document
         .getElementById("read-more")
         .addEventListener("click", function () {
@@ -170,34 +192,18 @@
         });
 
       // Querying the microservices
-      // var matchURL = '/create_match';
-      // var compatLink = '/get_compatibility/';
-
-      // var userURL =
-      // axios.get()
-
-      // axios.post('/create_match', {
-      //     // user_chooser_id: 1,
-      //     // user_suggested_id: 2,
-      //     // decision: 1
-      //     })
-      //     .then(response => {
-      //         console.log(response.data);
-      //         // Creating potential matches from db
-      //         var matches = response.data;
-
-      //     })
-      //     .catch(function (error) {
-      //         console.log(error);
-      //     });
-
       const app = Vue.createApp({
         data() {
           return {
-            // matches: []
-            result : "",
-            // userName: "",
-            // userMatches: ""
+            matches: [],
+            matchName : "",
+            matchPreferences: [],
+            compatScore: "",
+            matchDetails: {
+              'Age': "",
+              'Gender':"",
+              'First Date': "",
+            }
           };
         },
 
@@ -216,38 +222,48 @@
           getCompatScore() {
             axios.get();
             fetch(
-              "http://localhost:7100/get_compatibility/848395333569937409/848395333575245825"
-            //   "http://localhost:7100/get_compatibility/"+this.user1id+"/"+user2id+"
             //   "http://localhost:7100/get_compatibility/<current user id>/<number of people>"
+                "http://localhost:7100/get_compatibility/849412270219001857/3"
             )
               .then((response) => response.json())
               .then((data) => {
                 // Getting the compatibility score from compatiblility microservice
-                this.result = Math.round(parseInt(data['data']['compatibility_result']));
-                this.result = this.result.toString() + "%";
-                console.log(this.result);
+                this.result = data['data'];
+                // console.log(this.result);
+                // Iterating through the data to get the user's name and matche's names and compat score
+                // Note that this is only accessing one match for now
+                for (var i = 0; i < this.result.length; i++) {
+                    // matchData = new Array();
+                    matchData = data['data'][i]['data']['user2'];
+                    console.log(matchData);
+
+                    let userName = data['data'][i]['data']['user1']['firstname'];
+                    this.matchName = matchData['firstname'];
+                    this.matchDetails['Age'] = matchData['age'].toString();
+                    this.matchDetails['Gender'] = matchData['gender'];
+                    this.matchDetails['First Date'] = matchData['desiredfirstdate'];
+                    
+                    for (let j = 0; j < matchData['preferences'].length; j++) {
+                        this.matchPreferences.push(matchData['preferences'][j]);
+                    }
+                    this.compatScore = data['data'][i]['data']['compatibility_result'];
+                    // console.log('===========================');
+                    // console.log(userName);
+                    // console.log(this.matchName);
+                    // console.log(this.compatScore);
+                }
+                
               });
           },
 
-          getUserDetails() {
-           // Getting the user details from user microservice
-           axios.get();
-            fetch(
-              "http://127.0.0.1:26257/user"
-            // "http://127.0.0.1:26257/user" + this.user1id;
-            )
-              .then((response) => response.json())
-              .then((data) => {
-                // Getting the compatibility score from compatiblility microservice
-                this.result = Math.round(parseInt(data['data']['compatibility_result']));
-                this.result = this.result.toString() + "%";
-                console.log(this.result);
-              });
+          onSwipe(){
+            // generate new card for next match
+            console.log('swiped');
+            // this.getCompatScore();
           }
         },
 
         mounted() {
-            this.getUserDetails();
             this.getCompatScore();
         },
 
