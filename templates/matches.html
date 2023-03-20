@@ -57,7 +57,6 @@
 <body id="app" class="container-fluid">
 
     <!-- IF NO MATCHES -->
-    {{% if not matches %}}}
     <div class="text-center mt-5">
         <h1>You have no matches <b>YET</b>!</h1>
         <form action="home.html">
@@ -66,10 +65,8 @@
     </div>
 
     <!-- IF MATCHES -->
-    {{% else %}}
     <div class="text-center mt-5">
         <h1>Here are your matches!</h1>
-        {{% for match in matches %}}
 
     </div>
     <!-- <table class="d-flex justify-content-center mt-5">
@@ -96,16 +93,16 @@
 
 <script>
 
-    var url = '/match'
-    const segments = new URL(window.location.href).pathname.split('/');
-    const last = segments.pop() || segments.pop();
+    // var user_id = session['user_id'];
 
-    axios.get()
+    //for testing
+    var user_id = "101";
 
     const app = Vue.createApp(
         {
             data(){
                 return {
+                    result : "",
                 }
             },
 
@@ -113,16 +110,13 @@
                 getMatches() {
             axios.get();
             fetch(
-              "http://localhost:7100/get_compatibility/848395333569937409/848395333575245825"
-            //   "http://localhost:7100/get_compatibility/"+this.user1id+"/"+user2id+"
-            //   "http://localhost:7100/get_compatibility/<current user id>/<number of people>"
+              "http://localhost:5002/successful_match/" + user_id
             )
               .then((response) => response.json())
               .then((data) => {
                 // Getting the compatibility score from compatiblility microservice
-                this.result = Math.round(parseInt(data['data']['compatibility_result']));
-                this.result = this.result.toString() + "%";
-                console.log(this.result);
+                this.result = data;
+                console.log(data)
               });
           },
 
