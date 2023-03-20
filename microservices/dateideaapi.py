@@ -33,7 +33,7 @@ dates = {
             'Visit Jurong Bird Park',
             'Volunteer at SPCA for a day']
         ,
-        'foody':
+        'food':
             ['Visit a cafe!',
             'Try Vietnamese food!',
             'Visit Artbox together',
