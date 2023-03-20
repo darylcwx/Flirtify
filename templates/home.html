@@ -82,7 +82,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col-4">
-                <h5 class="card-title fs-5"> {{ matchName }}</h5>
+                <h5 class="card-title fs-5 align-middle"> {{ matchName }}</h5>
               </div>
               <div class="col-3">
                 <div
@@ -102,9 +102,9 @@
                 <li>Prefers: 
                     <ul>
                         <li v-for="item in matchPreferences">{{ item }}</li>
+                    </ul>
                 </li>
             </ul>
-
           </div>
 
           <a href="#" id="read-more" class="fs-6 ms-3 mt-3">Read More</a>
@@ -115,7 +115,7 @@
               <div class="row justify-content-between">
                 <div class="col-5">
                   <!-- BUTTON TRIGGERS THE NEXT CARD -->
-                  <button type="button" class="btn btn-lg btn-secondary">
+                  <button type="button" class="btn btn-lg btn-secondary" id="next-btn">
                     Next
                   </button>
                 </div>
@@ -125,6 +125,7 @@
                     class="btn btn-lg btn-danger"
                     data-bs-toggle="modal"
                     data-bs-target="#matchModal"
+                    id="like-btn"
                   >
                     <i class="fa-solid fa-heart"></i>
                   </button>
