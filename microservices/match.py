@@ -7,7 +7,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import aliased
 import requests
 import json
 
@@ -64,13 +64,10 @@ def get_all():
         }
     ), 404
 
-# specific match
-# problem with this is that it might return a match that has not been verified to be [yes,yes] yet
+# specific match by match_id
 @app.route("/match/<string:match_id>")
 def find_by_match_id(match_id):
     match = session.query(Match).filter_by(match_id=match_id).first()
-
-    # there can potentially be people who has appeared as user1 to appear as user2.
 
     if match:
         return jsonify(
@@ -86,10 +83,44 @@ def find_by_match_id(match_id):
         }
     ), 404
 
+# return successful matches by user id
+@app.route("/successful_match/<string:user_id>")
+def find_successful_matches(user_id):
+    #filter out by userid
+    m1 = session.query(Match).filter(Match.user_id1 == user_id)
+    m2 = session.query(Match).filter(Match.user_id2 == user_id)
+
+    #all matches by userid
+    matches = m1.union(m2).filter(Match.user1_match == "true", Match.user2_match).all()
+
+    # if matches means swiped - or have created match
+    if matches:
+        #filter out successful matches
+        # sm1 = session.query(Match).filter(Match.user1_match == "true", Match.user2_match == "true") #for now, it just filters out all successful matches
+
+        # successful_matches = sm1.union(m1).union(m2).all()
+        return jsonify(
+            {
+                "code": 200,
+                "data": [match.json() for match in matches]
+            }        
+        )
+    else:
+        return jsonify(
+        {
+            "code": 404,
+            "message": "Match not found."
+        }
+    ), 404
+
+
 # get all matches for a unique user
-@app.route("/matches/<int:user_id>")
+@app.route("/match/user/<int:user_id>")
 def find_matches_by_user_id(user_id):
-    matches = session.query(Match).filter(or_(Match.user_id1 == user_id, Match.user_id2 == user_id)).all()
+    m1 = session.query(Match).filter(Match.user_id1 == user_id)
+    m2 = session.query(Match).filter(Match.user_id2 == user_id)
+    matches = m1.union(m2).all()
+
 
     if matches:
         return jsonify(
@@ -119,7 +150,7 @@ def create_match():
 
     #yes or no decision
     decision_form = request.form['decision']
-    if decision_form == 1:
+    if decision_form == "1" or decision_form == 1:
         decision = True
     else:
         decision = False
@@ -153,7 +184,7 @@ def create_match():
         new_match = Match(
             user_id1 = user_chooser_id,
             user_id2 = user_suggested_id,
-            user1_match = decision
+            user1_match = bool(decision)
         )
         try:
             session.add(new_match)

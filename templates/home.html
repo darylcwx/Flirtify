@@ -45,12 +45,12 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="home.html">
             <img src="https://github.com/darylcwx/Flirtify/blob/main/images/flirtify-logo.png?raw=true" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
-            <span class="fs-4">Flirtify</span>
+            <!-- <span class="fs-4">Flirtify</span> -->
           </a>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="home.html">Home</a>
+            <a class="nav-link active" aria-current="page" href="home.html">Home</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="matches.html">Matches</a>
@@ -82,7 +82,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col-4">
-                <h5 class="card-title fs-5"> {{ matchName }}</h5>
+                <h5 class="card-title fs-5 align-middle"> {{ matchName }}</h5>
               </div>
               <div class="col-3">
                 <div
@@ -96,15 +96,15 @@
             I voted! for ***fool and caching my cp
           </p>
 
-          <div id="more-content">
+          <div id="more-content" style="display: none;">
             <ul>
                 <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
                 <li>Prefers: 
                     <ul>
                         <li v-for="item in matchPreferences">{{ item }}</li>
+                    </ul>
                 </li>
             </ul>
-
           </div>
 
           <a href="#" id="read-more" class="fs-6 ms-3 mt-3">Read More</a>
@@ -115,7 +115,7 @@
               <div class="row justify-content-between">
                 <div class="col-5">
                   <!-- BUTTON TRIGGERS THE NEXT CARD -->
-                  <button type="button" class="btn btn-lg btn-secondary">
+                  <button type="button" class="btn btn-lg btn-secondary" id="next-btn">
                     Next
                   </button>
                 </div>
@@ -125,6 +125,7 @@
                     class="btn btn-lg btn-danger"
                     data-bs-toggle="modal"
                     data-bs-target="#matchModal"
+                    id="like-btn"
                   >
                     <i class="fa-solid fa-heart"></i>
                   </button>
@@ -177,20 +178,6 @@
     </div>
 
     <script>
-      document
-        .getElementById("read-more")
-        .addEventListener("click", function () {
-          event.preventDefault();
-          moreContent = document.getElementById("more-content");
-          if (moreContent.style.display === "none") {
-            moreContent.style.display = "block";
-            this.innerHTML = "Read Less";
-          } else {
-            moreContent.style.display = "none";
-            this.innerHTML = "Read More";
-          }
-        });
-
       // Querying the microservices
       const app = Vue.createApp({
         data() {
@@ -242,7 +229,7 @@
                     this.matchDetails['Age'] = matchData['age'].toString();
                     this.matchDetails['Gender'] = matchData['gender'];
                     this.matchDetails['First Date'] = matchData['desiredfirstdate'];
-                    
+
                     for (let j = 0; j < matchData['preferences'].length; j++) {
                         this.matchPreferences.push(matchData['preferences'][j]);
                     }
@@ -271,6 +258,20 @@
       });
 
       app.mount("#app");
+
+      document
+        .getElementById("read-more")
+        .addEventListener("click", function(event) {
+          event.preventDefault();
+          moreContent = document.getElementById("more-content");
+          if (moreContent.style.display == "none") {
+            moreContent.style.display = "block";
+            this.innerHTML = "Read Less";
+          } else {
+            moreContent.style.display = "none";
+            this.innerHTML = "Read More";
+          }
+        });
     </script>
 
     <script
