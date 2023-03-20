@@ -210,16 +210,16 @@
             axios.get();
             fetch(
             //   "http://localhost:7100/get_compatibility/<current user id>/<number of people>"
-                "http://localhost:7100/get_compatibility/849412270219001857/3"
+                "http://localhost:7100/get_compatibility/849412270214119425/3"
             )
               .then((response) => response.json())
               .then((data) => {
                 // Getting the compatibility score from compatiblility microservice
-                this.result = data['data'];
-                // console.log(this.result);
+                // this.result = data['data'];
+                console.log(data['data']);
                 // Iterating through the data to get the user's name and matche's names and compat score
                 // Note that this is only accessing one match for now
-                for (var i = 0; i < this.result.length; i++) {
+                for (var i = 0; i < data['data'].length; i++) {
                     // matchData = new Array();
                     matchData = data['data'][i]['data']['user2'];
                     console.log(matchData);
