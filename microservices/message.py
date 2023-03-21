@@ -1,5 +1,6 @@
 from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from flask_cors import CORS
 from cockroachdb.sqlalchemy import run_transaction
 from numpy import mat
 from sqlalchemy import create_engine
@@ -10,6 +11,7 @@ from sqlalchemy.orm import relationship
 
 
 app = Flask(__name__, template_folder='../templates')
+CORS(app)
 app.secret_key = 'flirtify_esd_micro'
 
 # Configure the SQLAlchemy engine to use CockroachDB
