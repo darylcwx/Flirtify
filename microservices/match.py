@@ -101,19 +101,36 @@ def find_successful_matches(user_id):
         # sm1 = session.query(Match).filter(Match.user1_match == "true", Match.user2_match == "true") #for now, it just filters out all successful matches
 
         # successful_matches = sm1.union(m1).union(m2).all()
-        return jsonify(
+        all_matches = []
+        for match in matches:
+                match_details = {
+                    'match_id'      : str(match.match_id),
+                    'dateIdea'      : match.dateIdea,
+                    'datePrefs'     : match.datePrefs,
+                    'user1_match'   : match.user1_match,
+                    'user2_match'   : match.user2_match,
+                    'user_id1'      : str(match.user_id1),
+                    'user_id2'      : str(match.user_id2),
+                    }
+                all_matches.append(match_details)
+                
+        response = jsonify(
             {
                 "code": 200,
-                "data": [match.json() for match in matches]
+                "data": all_matches
             }        
         )
     else:
-        return jsonify(
+        response = jsonify(
         {
             "code": 404,
             "message": "Match not found."
         }
     ), 404
+
+    response.headers.add('Access-Control-Allow-Origin', '*')
+
+    return response
 
 
 # get all matches for a unique user
