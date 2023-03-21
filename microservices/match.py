@@ -95,7 +95,7 @@ def find_successful_matches(user_id):
     m2 = session.query(Match).filter(Match.user_id2 == user_id)
 
     #all matches by userid
-    matches = m1.union(m2).filter(Match.user1_match == "true", Match.user2_match).all()
+    matches = m1.union(m2).filter(Match.user1_match == "true", Match.user2_match == "true").all()
 
     # if matches means swiped - or have created match
     if matches:
