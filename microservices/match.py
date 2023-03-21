@@ -134,18 +134,17 @@ def find_successful_matches(user_id):
                     ), 500
 
             match_details = {
-                    'match_id'      : str(match.match_id),
-                    'dateIdea'      : match.dateIdea,
-                    'datePrefs'     : match.datePrefs,
-                    'user1_match'   : match.user1_match,
-                    'user2_match'   : match.user2_match,
-                    'user_id1'      : str(match.user_id1),
-                    'user_id2'      : str(match.user_id2),
-                    }
+                'match_id'      : str(match.match_id),
+                'dateIdea'      : match.dateIdea,
+                'datePrefs'     : match.datePrefs,
+                'user1_match'   : match.user1_match,
+                'user2_match'   : match.user2_match,
+                'user_id1'      : str(match.user_id1),
+                'user_id2'      : str(match.user_id2),
+                }
             all_matches.append(match_details)
-
-        # else return
-        return jsonify(
+                
+        response = jsonify(
             {
                 "code": 200,
                 "data": all_matches
