@@ -146,15 +146,20 @@
 
             methods : {
                 getMatches() {
-                    axios.get();
-                    fetch(
-                    //   "http://localhost:5002/successful_match/" + user_id
-                    "http://localhost:5002/successful_match/849412270214119425" 
-                    )
-                    .then((response) => response.json())
-                    .then((data) => {
+                    axios.get("http://localhost:5002/successful_match/849412270214119425", 
+                        {
+                          headers: {
+                                "Access-Control-Allow-Origin": '*'
+                            }  
+                        })
+                    // fetch(
+                    // //   "http://localhost:5002/successful_match/" + user_id
+                    // "http://localhost:5002/successful_match/849412270214119425" 
+                    // )
+                    // .then((response) => response.json())
+                    .then(response => {
                         // Getting the successful matches from a user_id
-                        this.matchesData = data['data'];
+                        this.matchesData = response.data.data;
                         console.log(this.matchesData);
                         console.log("============")
                         // console.log(this.matchesData);
@@ -179,6 +184,9 @@
                             console.log("No matches");
                             this.matchesResult = 0;
                         }
+                    })
+                    .catch(error => {
+                        console.log(error.message)
                     });
                 },
 
