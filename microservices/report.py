@@ -7,6 +7,7 @@ from invokes import invoke_http
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+import json as jsonnn
 
 conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
 
@@ -79,7 +80,7 @@ def add_report(ids, category, message):
         print('user_result:', user_result)   
         report_status = "Number of reports exceeded 5, user deleted"
 
-    elif checkMsg(message):
+    elif checkMsg(category, message):
         # havent exceed, increment by 1
         get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category, message) VALUES (%s, %s, %s, %s)", (userid, otherid, category, message,))
         report_status = "Number of reports increased by 1"
@@ -110,12 +111,29 @@ def get_reports():
     ), 404
 
 
-def checkMsg(message):
-    check = True
-    categories = ['sexual', 'racist', 'vulgar']
 
-    return check
+def checkMsg(cat, message):
+    # categories = ['sexual', 'discriminatory', 'insult', 'inappropriate']
+    data = {
+        'text': message,
+        'mode': 'standard',
+        'lang': 'en',
+        'opt_countries': 'sg',
+        'api_user': '',
+        'api_secret': ''
+    }
+
+    r = requests.post('https://api.sightengine.com/1.0/text/check.json', data = data)
+
+    output = jsonnn.loads(r.text)
+    print(output['profanity']['matches'])
+
+    for item in output['profanity']['matches']:
+        if item['type'] == cat:
+            return True 
+
+    return False
 
 
 if __name__ == '__main__':
-    app.run(port=5005, debug=True)
+    app.run(port=5015, debug=True)
