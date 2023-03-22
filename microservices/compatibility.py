@@ -3,7 +3,7 @@ from flask_cors import CORS
 from invokes import invoke_http
 import requests
 import json
-import os
+import os, sys
 from datetime import datetime
 import random
 
@@ -15,7 +15,7 @@ CORS(app)
 # payment got some issues https://rapidapi.com/AstroMatcherAPI/api/astro-matcher-api
 
 # For testing
-#http://localhost:7000/get_compatibility/849412270219001857/3
+#http://localhost:7000/get_compatibility/849811382189850625/3
 
 #====================================================================
 #====================================================================
@@ -34,8 +34,6 @@ channel.exchange_declare(exchange='profiles_direct', exchange_type="direct", dur
 channel.queue_declare(queue='profiles', durable=True)
 channel.queue_bind(exchange='profiles_direct', queue='profiles') 
 
-
-
 #====================================================================
 #====================================================================
 
@@ -46,23 +44,37 @@ def get_compatibility(user1id, num):
     # ACCESS USER MICROSERVICE TO GET USER OBJECTS
     user1 = invoke_http(user_URL + "/" + user1id, method='GET')
     users = invoke_http(user_URL, method='GET')
-    if user1["code"] == 500 or users["code"] == 500:
-        return user1
-    elif user1["code"] == 404 or users["code"] == 404:
+    if user1["code"] == 404 or users["code"] == 404:
         return jsonify(
             {
                 "code": 404,
                 "message": "User(s) not found."
             }
         ), 404
+    elif user1["code"] not in range(200, 300):
+        return jsonify(
+            {
+                "code": 500,
+                "data": user1,
+                "message": "Internal server error."
+            }
+        ), 500
+    elif users["code"] not in range(200, 300):
+        return jsonify(
+            {
+                "code": 500,
+                "data": users,
+                "message": "Internal server error."
+            }
+        ), 500
     user1 = user1["data"]
     users = users["data"]["users"]
     random.shuffle(users)
     #====================================================================
     # user different gender and not already queued.
     try:
-        result = { "code": "201", "data" : []}
-        # forAMQP = { "code": "201", "data" : []}
+        result = { "code": "200", "data" : []}
+        # forAMQP = { "code": "200", "data" : []}
         queued = []
         for user in users:
             if len(queued) == num:
@@ -71,18 +83,33 @@ def get_compatibility(user1id, num):
                 user2 = user
                 queued.append(user)
                 res = processGetCompatibility(user1, user2)
-                result["data"].append(res)
+                if res["code"] not in range(200,300):
+                    return jsonify(
+                        {
+                            "code": 400,
+                            "data": res,
+                            "message": "Bad request. Please check that APIs are available and working."
+                        }
+                    )
+                else:
+                    result["data"].append(res)
 
                 # splitting up result, return 1 now, send the rest to AMQP
                 # if len(queued) == 0:
                 #    result["data"].append(res)
                 # else:
-                #     forAMQP = { "code": "201", "data" : []}
+                #     forAMQP = { "code": "200", "data" : []}
                 #     forAMQP["data"].append(res)
                 # break
 
     except Exception as e:
-        result = { "code": "500", "message": "Internal server error occurred. Please try again later."}
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+        print(ex_str)
+        result = { "code": "500", 
+                  "message": "compatibility.py internal error: " + ex_str
+                  }
     
     # return 1, the rest AMQP (need remove from above result["data"])
     if num > 1:
@@ -91,8 +118,6 @@ def get_compatibility(user1id, num):
 
     # for now,
     return jsonify(result)
-    
-    
     #====================================================================
     #====================================================================
 
@@ -124,7 +149,10 @@ def processGetCompatibility(user1, user2):
     response = requests.request("GET", url, headers=headers, params=querystring)
     print("API 1: " + response.text)
     dict = json.loads(response.text)
-    result1 = dict["percentage"]
+    if "percentage" in dict:
+        result1 = int(dict["percentage"])
+    else:
+        result1= dict["message"]
 
     # 2. Real Love Calculator API from RapidAPI:
     url = "https://real-love-calculator.p.rapidapi.com/"
@@ -138,7 +166,13 @@ def processGetCompatibility(user1, user2):
     response = requests.request("POST", url, json=params,headers=headers)
     print("API 2: " + response.text)
     dict = json.loads(response.text)
-    #result2 = dict["overall"]
+    print(dict)
+    
+    if "overall" in dict:
+        result2 = int(dict["overall"])
+    else:
+        result2 = dict["message"]
+    # placeholder hard code in case API not working
     result2 = 78
 
 
@@ -164,32 +198,42 @@ def processGetCompatibility(user1, user2):
     print("API 3: " + response.text) 
     dict = {"type": "ok","result": {"attraction": 62,"emotion": 66,"mental": 64,"endurability": 81,"lifePath": 50,"children": 66,"overall": 70}
     }
-    result3 = dict["result"]["overall"]
+    if "result" in dict:
+        result3 = int(dict["result"]["overall"])
+    else:
+        result3 = dict["message"]
 
     # 4. Algorithm defined here
     if "NF" in mbti1 and "SJ" in mbti2 or "NF" in mbti2 and "SJ" in mbti1:
-        mbti = 80
+        mbti = 90
     elif "STJ" in mbti1 and "SFJ" in mbti2 or "STJ" in mbti2 and "SFJ" in mbti1 or "NF" in mbti1 and "NF" in mbti2:
-        mbti = 70
+        mbti = 80
     else:
-        mbti = 60
+        mbti = 70
 
     maxPref = max(len(pref1), len(pref2))
+    minPref = min(len(pref1), len(pref2))
     prefCount = 0
     for i in pref1:
         if i in pref2:
             prefCount += 1
-    prefScore = min(50, prefCount/maxPref * 100)
+    prefScore = 50 + prefCount/minPref * 100
 
-    compatibility_result = str(round(((int(result1) + int(result2) + int(result3) + prefScore) + mbti) / 5,2)) + "%"
-    return {
-        "code": 201,
+    try:
+        compatibility_result = str(round((result1 + result2 + result3 + prefScore + mbti) / 5,2)) + "%"
+        return {
+        "code": 200,
         "data": {
             "user1": user1,
             "user2": user2,
             "compatibility_result": compatibility_result
         }
     }
+    except:
+        return {
+            "code": 400,
+            "message": "Bad request. Please check that APIs are available and working."
+        }
 
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) +
