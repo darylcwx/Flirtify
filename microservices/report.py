@@ -127,6 +127,8 @@ def checkMsg(cat, message):
 
     output = jsonnn.loads(r.text)
     print(output['profanity']['matches'])
+    if output['status'] != 'success':
+        return False
 
     for item in output['profanity']['matches']:
         if item['type'] == cat:
