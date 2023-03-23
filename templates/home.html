@@ -206,6 +206,7 @@
 
           this.loadFirstMatch(userId);
           this.loadMatchQueue(userId, 4);
+          this.loadMatchQueueMsg();
 
             // socket.on('connect', ()=>{
             //   socket.emit('subscribe', {queueName: 'profiles'});
@@ -280,19 +281,41 @@
                 //     // console.log(this.matchName);
                 //     // console.log(this.compatScore);
                 // }
+
                   console.log('==============================')
                   console.log('Original Data')
                   console.log(data);
-                  console.log('==============================')
-                  JSON.stringify(data);
-                  console.log('Stringified Data');
-                  console.log(data);
-                  console.log('==============================')
-                  JSON.parse(data);
-                  console.log('Parsed Data');
-                  console.log(data);
+                  // console.log('==============================')
+                  // JSON.stringify(data);
+                  // console.log('Stringified Data');
+                  // console.log(data);
+                  // console.log('==============================')
+                  // JSON.parse(data);
+                  // console.log('Parsed Data');
+                  // console.log(data);
 
 
+              })
+              .catch(error => {
+                    console.log(error.message);
+                });
+          },
+
+          loadMatchQueueMsg(){
+            console.log('==============================');
+            console.log('Loading Match Queue Message');
+
+            fetch(
+              "http://localhost:7100/get_queue_msg",
+                        {
+                            mode: 'cors',
+                        }
+            )
+              .then((response) => response.json())
+              .then((data) => {
+                console.log('==============================')
+                console.log('this is the data from the RabbitMQ Message')
+                console.log(data);
               })
               .catch(error => {
                     console.log(error.message);
@@ -308,6 +331,7 @@
 
         mounted() {
             this.loadMatchQueue(userId, 1);
+            this.loadMatchQueueMsg();
         },
 
         computed: {},
