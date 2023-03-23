@@ -191,9 +191,16 @@
                 },
 
                 getUserInfo(userId){
+
+                    // Let's get the user's information
+
+
                     axios.get()
                     fetch(
-                        "http://localhost:26257/user/${userId}}"
+                        "http://localhost:26257/user/" + userId.toString(),
+                        {
+                            mode: 'no-cors',
+                        }
                     )
                     .then((response) => response.json())
                     .then((data) =>{
