@@ -38,6 +38,9 @@
 
     <!-- AXIOS -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- SOCKET.IO -->
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
     
   </head>
 
@@ -82,7 +85,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col-4">
-                <h5 class="card-title fs-5 align-middle"> {{ matchName }}</h5>
+                <h5 class="card-title fs-5 align-middle"> {{ matchName }} {{ matchAge }}</h5>
               </div>
               <div class="col-3">
                 <div
@@ -178,80 +181,133 @@
     </div>
 
     <script>
+      // For Testing
+      var userId = 849811382189850625;
+
       // Querying the microservices
       const app = Vue.createApp({
         data() {
           return {
-            matches: [],
+            matchesQueue: [],
             matchName : "",
+            matchAge: "",
             matchPreferences: [],
             compatScore: "",
             matchDetails: {
-              'Age': "",
               'Gender':"",
               'First Date': "",
+              'MBTI': "",
             }
           };
         },
 
         created(){
-            // axios.get()
-            // fetch('http://localhost:5000/matches')
-            // .then(response => response.json())
-            // .then(data => {
-            //     this.matches = data;
-            //     console.log(this.matches);
+          // const socket = io('http://localhost:5672');
+
+          this.loadFirstMatch(userId);
+          this.loadMatchQueue(userId, 4);
+
+            // socket.on('connect', ()=>{
+            //   socket.emit('subscribe', {queueName: 'profiles'});
             // })
-            // this.getAll()
+
+            // socket.on('profile', (profiles) => {
+            //   this.matchesQueue.push(profile);
+            // })
+
+            // console.log('Queuing up matches...');
+
         },
 
         methods: {
-          getCompatScore() {
-            axios.get();
+          loadFirstMatch(userId){
             fetch(
-            //   "http://localhost:7100/get_compatibility/<current user id>/<number of people>"
-                "http://localhost:7100/get_compatibility/849412270214119425/3"
+              // "http://localhost:7100/get_queue/" +user_id "/1"
+              "http://localhost:7100/get_queue/849811382189850625/1"
+            )
+            .then((response) => response.json())
+            .then((data) => {
+              // Getting the compatibility score
+              this.compatScore = data['data'][0]['data']['compatibility_result'];
+
+              // Showing Matches Details
+              firstMatchData = data['data'][0]['data']['user2'];
+              this.matchName = firstMatchData['firstname'] + " " + firstMatchData['lastname'] + ',';
+              this.matchAge = firstMatchData['age'];
+              this.matchPreferences = firstMatchData['preferences'];
+              this.matchDetails['Gender'] = firstMatchData['gender'];
+              this.matchDetails['First Date'] = firstMatchData['desiredfirstdate'];
+              this.matchDetails['MBTI'] = firstMatchData['mbti'].toUpperCase();
+            })
+            .catch(error => {
+                console.log(error.message);
+            });
+
+            console.log('Completed First Match')
+          },
+
+
+          loadMatchQueue(userId, numberToRetrieve) {
+            // axios.get();
+            fetch(
+              // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
+              "http://localhost:7100/get_queue_async/849811382189850625/2"
             )
               .then((response) => response.json())
               .then((data) => {
                 // Getting the compatibility score from compatiblility microservice
                 // this.result = data['data'];
-                console.log(data['data']);
-                // Iterating through the data to get the user's name and matche's names and compat score
-                // Note that this is only accessing one match for now
-                for (var i = 0; i < data['data'].length; i++) {
-                    // matchData = new Array();
-                    matchData = data['data'][i]['data']['user2'];
-                    console.log(matchData);
+                // console.log(data['data']);
+                // // Iterating through the data to get the user's name and matche's names and compat score
+                // // Note that this is only accessing one match for now
+                // for (var i = 0; i < data['data'].length; i++) {
+                //     // matchData = new Array();
+                //     matchData = data['data'][i]['data']['user2'];
+                //     console.log(matchData);
 
-                    let userName = data['data'][i]['data']['user1']['firstname'];
-                    this.matchName = matchData['firstname'];
-                    this.matchDetails['Age'] = matchData['age'].toString();
-                    this.matchDetails['Gender'] = matchData['gender'];
-                    this.matchDetails['First Date'] = matchData['desiredfirstdate'];
+                //     let userName = data['data'][i]['data']['user1']['firstname'];
+                //     this.matchName = matchData['firstname'];
+                //     this.matchDetails['Age'] = matchData['age'].toString();
+                //     this.matchDetails['Gender'] = matchData['gender'];
+                //     this.matchDetails['First Date'] = matchData['desiredfirstdate'];
 
-                    for (let j = 0; j < matchData['preferences'].length; j++) {
-                        this.matchPreferences.push(matchData['preferences'][j]);
-                    }
-                    this.compatScore = data['data'][i]['data']['compatibility_result'];
-                    // console.log('===========================');
-                    // console.log(userName);
-                    // console.log(this.matchName);
-                    // console.log(this.compatScore);
-                }
-                
-              });
+                //     for (let j = 0; j < matchData['preferences'].length; j++) {
+                //         this.matchPreferences.push(matchData['preferences'][j]);
+                //     }
+                //     this.compatScore = data['data'][i]['data']['compatibility_result'];
+                //     // console.log('===========================');
+                //     // console.log(userName);
+                //     // console.log(this.matchName);
+                //     // console.log(this.compatScore);
+                // }
+                  console.log('==============================')
+                  console.log('Original Data')
+                  console.log(data);
+                  console.log('==============================')
+                  JSON.stringify(data);
+                  console.log('Stringified Data');
+                  console.log(data);
+                  console.log('==============================')
+                  JSON.parse(data);
+                  console.log('Parsed Data');
+                  console.log(data);
+
+
+              })
+              .catch(error => {
+                    console.log(error.message);
+                });
           },
 
+          // function that retrieves another compatability result after a swipe
           onSwipe(){
-            // generate new card for next match
             console.log('swiped');
-            // this.getCompatScore();
+            // this.loadMatchQueue(userId, 1);
           }
         },
 
         mounted() {
-            this.getCompatScore();
+            this.loadMatchQueue(userId, 1);
         },
 
         computed: {},
