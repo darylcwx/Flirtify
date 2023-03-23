@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session
+from flask import Flask, jsonify
 from flask_cors import CORS
 from invokes import invoke_http
 import requests
@@ -6,6 +6,7 @@ import json
 import os, sys
 from datetime import datetime
 import random
+import asyncio
 
 app = Flask(__name__, template_folder='../templates')
 CORS(app)
@@ -19,25 +20,49 @@ CORS(app)
 
 #====================================================================
 #====================================================================
-import pika
-RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
 
-#hostname = "localhost"
-port = 5672
-connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
-channel = connection.channel()
-
-# Declare Exchange
-channel.exchange_declare(exchange='profiles_direct', exchange_type="direct", durable=True)
-
-# Declare and bind Queue 
-channel.queue_declare(queue='profiles', durable=True)
-channel.queue_bind(exchange='profiles_direct', queue='profiles') 
 
 #====================================================================
 #====================================================================
 
-@app.route("/get_compatibility/<string:user1id>/<int:num>", methods=['GET'])
+@app.route("/get_queue/<string:user1id>/<int:num>", methods=['GET'])
+def get_queue(user1id, num):
+    return get_compatibility(user1id, num)
+
+@app.route("/get_queue_async/<string:user1id>/<int:num>", methods=['GET'])
+async def get_queue_async(user1id, num):
+    await asyncio.sleep(0)
+    result = get_compatibility(user1id, num) #response object
+    json_result = result.get_json() #json object
+    try:
+        import pika
+        RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
+        port = 5672
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
+        channel = connection.channel()
+
+        # Declare Exchange
+        channel.exchange_declare(exchange='profiles_direct', exchange_type="direct", durable=True)
+
+        # Declare and bind Queue 
+        channel.queue_declare(queue='profiles', durable=True)
+        channel.queue_bind(exchange='profiles_direct', queue='profiles') 
+        channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(json_result), properties=pika.BasicProperties(delivery_mode = 2))
+    except:
+        return jsonify(
+            { 
+                "code": 500, 
+                "message": "Unable to connect to RabbitMQ queue='profiles' in exchange='profiles_direct'"
+            }
+        ), 200
+
+    return jsonify(
+            { 
+                "code": 200, 
+                "message": "Returned result to RabbitMQ queue='profiles' in exchange='profiles_direct'"
+            }
+        ), 200
+
 def get_compatibility(user1id, num):
     user_URL = "http://localhost:26257/user"
     #====================================================================
@@ -71,10 +96,8 @@ def get_compatibility(user1id, num):
     users = users["data"]["users"]
     random.shuffle(users)
     #====================================================================
-    # user different gender and not already queued.
     try:
         result = { "code": "200", "data" : []}
-        # forAMQP = { "code": "200", "data" : []}
         queued = []
         for user in users:
             if len(queued) == num:
@@ -87,20 +110,11 @@ def get_compatibility(user1id, num):
                     return jsonify(
                         {
                             "code": 400,
-                            "data": res,
                             "message": "Bad request. Please check that APIs are available and working."
                         }
                     )
                 else:
                     result["data"].append(res)
-
-                # splitting up result, return 1 now, send the rest to AMQP
-                # if len(queued) == 0:
-                #    result["data"].append(res)
-                # else:
-                #     forAMQP = { "code": "200", "data" : []}
-                #     forAMQP["data"].append(res)
-                # break
 
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -110,16 +124,10 @@ def get_compatibility(user1id, num):
         result = { "code": "500", 
                   "message": "compatibility.py internal error: " + ex_str
                   }
-    
-    # return 1, the rest AMQP (need remove from above result["data"])
-    if num > 1:
-        # change result in body to forAMQP
-        channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(result), properties=pika.BasicProperties(delivery_mode = 2))
 
-    # for now,
     return jsonify(result)
     #====================================================================
-    #====================================================================
+    #===================================================================
 
 def processGetCompatibility(user1, user2):
     name1 = user1["firstname"] + " " + user1["lastname"] 
@@ -138,7 +146,7 @@ def processGetCompatibility(user1, user2):
     # print("==================")
     # print(user2)
     
-
+    # =================================================================================
     # 1. Love Calculator API from RapidAPI:
     url = "https://love-calculator.p.rapidapi.com/getPercentage"
     querystring = {"fname": name1,"sname": name2}
@@ -153,7 +161,7 @@ def processGetCompatibility(user1, user2):
         result1 = int(dict["percentage"])
     else:
         result1= dict["message"]
-
+    # =================================================================================
     # 2. Real Love Calculator API from RapidAPI:
     url = "https://real-love-calculator.p.rapidapi.com/"
     params = {"male": {"name": name1, "dob": bd1},
@@ -166,16 +174,14 @@ def processGetCompatibility(user1, user2):
     response = requests.request("POST", url, json=params,headers=headers)
     print("API 2: " + response.text)
     dict = json.loads(response.text)
-    print(dict)
-    
     if "overall" in dict:
         result2 = int(dict["overall"])
     else:
         result2 = dict["message"]
+
     # placeholder hard code in case API not working
     result2 = 78
-
-
+    # =================================================================================
     # 3. Astro Matcher API from RapidAPI: but it's not working rapidAPI can't accept my payment method
     url = "https://astro-matcher-api.p.rapidapi.com/match2"
     lat = 1.3649170000000002
@@ -202,7 +208,7 @@ def processGetCompatibility(user1, user2):
         result3 = int(dict["result"]["overall"])
     else:
         result3 = dict["message"]
-
+    # =================================================================================
     # 4. Algorithm defined here
     if "NF" in mbti1 and "SJ" in mbti2 or "NF" in mbti2 and "SJ" in mbti1:
         mbti = 90
@@ -238,4 +244,6 @@ def processGetCompatibility(user1, user2):
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) +
           " for getting compatibility...")
-    app.run(host="0.0.0.0", port=7000, debug=True)
+    loop = asyncio.get_event_loop()
+    loop.create_task(app.run(host="0.0.0.0", port=7000, debug=True))
+    loop.run_forever()
