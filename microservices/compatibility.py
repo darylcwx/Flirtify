@@ -16,7 +16,7 @@ CORS(app)
 # payment got some issues https://rapidapi.com/AstroMatcherAPI/api/astro-matcher-api
 
 # For testing
-#http://localhost:7000/get_compatibility/849811382189850625/3
+#http://localhost:7000/get_queue/849811382189850625/3
 
 #====================================================================
 #====================================================================
@@ -24,6 +24,27 @@ CORS(app)
 
 #====================================================================
 #====================================================================
+# dearest kaydon, attached you shall find pull msg URL pls test n revert thank u. best regards, daryl
+@app.route('/get_queue_msg', methods=['GET'])
+def get_queue_msg():
+    import pika
+    RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
+    port = 5672
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
+    channel = connection.channel()
+    channel.queue_declare(queue='profiles', durable=True)
+    channel.queue_bind(exchange='profiles_direct', queue='profiles')
+    messages = []
+
+    def callback(ch, method, properties, body):
+        message = body.decode()
+        messages.append(message)
+
+    channel.basic_consume(queue='profiles', on_message_callback=callback, auto_ack=True)
+    channel.start_consuming()
+
+    return jsonify({'messages': messages})
+
 
 @app.route("/get_queue/<string:user1id>/<int:num>", methods=['GET'])
 def get_queue(user1id, num):
