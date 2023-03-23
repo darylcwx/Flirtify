@@ -70,60 +70,95 @@
 
         <!-- IF MATCHES -->
         <div class="text-center mt-5" v-else>
-            <h1>Here are your matches!</h1>
+            <h1 class="display-3">Here are your matches!</h1>
 
         </div>
-        <table class="d-flex justify-content-center mt-5">
-            <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Actions</th>
-            </tr>
-            <tr v-for="item in matchesResult">
-                <td><img id="profilePic" src="../images/flirtify-logo.png" alt="Profile Picture"></td>
-                <!-- <td>Username</td> -->
-                <td>{{ item.user_id2 }}</td>
-                <td>{{ item.age }}</td>
-                <td>
-                    <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                        <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
-                    </button>
-                    
-                    <!-- Modal -->
-                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- <table class="d-flex justify-content-center mt-5"> -->
+        <div class="table-responsive">
+            <table class="table table-hover mt-5 align-middle">
+                <thead>
+                <tr>
+                    <th class="text-center" scope="col">Name</th>
+                    <th scope="col">MBTI</th>
+                    <th scope="col">Age</th>
+                    <th scope="col" class="ps-5">Actions</th>
+                </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                <tr v-for="item in matchesResult" scope="row">
+                    <!-- <td></td> -->
+                    <!-- <td>Username</td> -->
+                    <td class="d-flex justify-content-center">
+                        <img class="profile-pic" src="../images/flirtify-logo.png" alt="Profile Picture"> 
+                        <span class="fw-semibold match-username mx-5">{{ matchesInfo[item.user_id2]['info']['firstname'] }}</span>
+                    </td>
+                    <td class="text-uppercase">{{ matchesInfo[item.user_id2]['info']['mbti'] }}</td>
+                    <td>{{ matchesInfo[item.user_id2]['info']['age'] }}</td>
+                    <td>
+                        <!-- Button trigger modal -->
+                        <!-- Popup pls -->
+                        <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                            <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
+                        </button>
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                        {{ matchesInfo[item.user_id2]['info']['firstname'] }} 
+                                        <a href="" class="text-muted" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="right" data-bs-content="Report">
+                                            <i class="fa-solid fa-circle-exclamation"></i>
+                                        </a>
+                                    </h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center">
+                                    <p class="fw-semibold">First Date Idea!</p>
+                                    <h3> {{ matchesInfo[item.user_id2]['dateIdea'][0] }}</h3>
+
+                                    <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
+                                    <div v-if="typeof moreDates[item.user_id2] == object">
+                                        <p class="fw-bold my-3">More Date Ideas</p>
+                                        <ul class="list-group" v-for="item in moreDates[item.user_id2]">
+                                            <li class="list-group-item"> {{ item }} </li>
+                                        </ul>
+                                    </div>
+                                    <div v-else>
+                                        <p>{{ moreDates[item.user_id2] }}</p>
+                                    </div>
+                                    <!-- <div id="date-content" style="display: none;">
+                                        <ul>
+                                            <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
+                                            <li>Prefers: 
+                                                <ul>
+                                                    <li v-for="item in matchPreferences">{{ item }}</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div> -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                    
+                                    <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item.user_id2)">Date Ideas</button>
+                                    <button type="button" class="btn btn-primary">Report</button>
+                                </div>
                             </div>
-                            <div class="modal-body">
-                            ...
-                            </div>
-                            <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
-                            <!-- <button type="button" class="btn btn-primary">Date Ideas</button> -->
-                            <!-- <button type="button" class="btn btn-primary">Report</button> -->
                             </div>
                         </div>
-                        </div>
-                    </div>
-                    
-                
-                </td>
-                <td>
-                    <!-- Tag match_id to each button -->
-                    <button type="button" class="btn btn-danger">Message <i class="fa-regular fa-message"></i></button>
-                </td>
-            </tr>
-        </table>
+                        <!-- Tag match_id to each button -->
+                        <button type="button" class="btn btn-danger" @click="goMessage(matchesInfo[item.user_id2]['matchId'])">Message <i class="fa-regular fa-message"></i></button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-
 <script>
+    
 
     // var user_id = session['user_id'];
 
@@ -136,11 +171,13 @@
 
                 // Matches Data
                 // matchesResult is the array that will be used to display the matches using match microservice
-                // matchesInfo is the array that will be used to store the information of the matches that accesses user.py microservice
+                // matchesInfo is the array that will be used to store the information of the matches that accesses user.py microservice. Key is the user_id and value is the information of the user
+                // moreDates is the object that will be used to store the date ideas of the matches. Key is the match_id and value is the date idea
 
                 return {
                     matchesResult : [],
-                    matchesInfo: {}
+                    matchesInfo: {},
+                    moreDates: {},
                 }
             },
 
@@ -160,23 +197,30 @@
                     .then(response => {
                         // Getting the successful matches from a user_id
                         this.matchesData = response.data.data;
-                        console.log(this.matchesData);
-                        console.log("============")
-                        // console.log(this.matchesData);
+                        console.log(JSON.stringify(this.matchesData));
                         //Iterate through the successful matches and push them into the table
                         if (this.matchesData.length > 0){
                             for (var i = 0; i < this.matchesData.length; i++) {
                                 this.matchesResult.push(this.matchesData[i]);
-                                console.log(this.matchesResult);
-                                
+                                // console.log(this.matchesResult);
+                                console.log("============================")
+                                console.log('This is the date idea:')
+                                console.log(this.matchesData[i]['dateIdea'][0]);
+
+                                let dateIdea = this.matchesData[i]['dateIdea'];
+                                let matchId = this.matchesData[i]['match_id'];
                                 let matchUser1 = this.matchesData[i]['user_id1'];
 
                                 // Checking for the user_id that is not the current user
                                 if (matchUser1 == user_id){
                                     this.matchesInfo[this.matchesData[i]['user_id2']] = {};
+                                    this.matchesInfo[this.matchesData[i]['user_id2']]['dateIdea'] = dateIdea;
+                                    this.matchesInfo[this.matchesData[i]['user_id2']]['matchId'] = matchId;
                                     this.getUserInfo(this.matchesData[i]['user_id2']);
                                 } else{
                                     this.matchesInfo[this.matchesData[i]['user_id1']] = {};
+                                    this.matchesInfo[this.matchesData[i]['user_id1']]['dateIdea'] = dateIdea;
+                                    this.matchesInfo[this.matchesData[i]['user_id1']]['matchId'] = matchId;
                                     this.getUserInfo(this.matchesData[i]['user_id1']);
                                 }
                             }
@@ -184,28 +228,66 @@
                             console.log("No matches");
                             this.matchesResult = 0;
                         }
+
+                        console.log('=============================');
+                        console.log('Matches Info');
+                        // this.matchesInfo = JSON.stringify(this.matchesInfo);
+                        // console.log(JSON.stringify(this.matchesInfo));
+                        // console.log(this.matchesInfo["849412270226374657"]['dateIdea']);
+                        // console.log('=============================');
+                        // console.log('Matches Result');
+                        // console.log(this.matchesResult)
+                        // console.log('=============================');
+
                     })
                     .catch(error => {
                         console.log(error.message)
                     });
                 },
 
-                getUserInfo(userId){
-
+                getUserInfo(matchUserId){
                     // Let's get the user's information
-
-
-                    axios.get()
+                    matchUserId = matchUserId.toString();
                     fetch(
-                        "http://localhost:26257/user/" + userId.toString(),
+                        "http://localhost:26257/user/" + matchUserId,
                         {
-                            mode: 'no-cors',
+                            mode: 'cors',
                         }
                     )
                     .then((response) => response.json())
                     .then((data) =>{
-                        console.log(data['data'])
+                        // console.log('=============================');
+                        // console.log('Fetching Users Info');
+                        // console.log('=============================');
+                        // console.log(data['data'])
+
+                        // Storing the user's information into the matchesInfo array
+                        this.matchesInfo[matchUserId]['info'] = data['data'];
+                        console.log('Matches Info');
+                        console.log(JSON.stringify(this.matchesInfo));
+
                     })
+                    .catch(error => {
+                        console.log(error.message);
+                    });
+                },
+
+                generateMoreDates(matchUserId){
+                    console.log("Generate more dates");
+                    dateIdeas = this.matchesInfo[matchUserId.toString()]['dateIdea'];
+                    if (dateIdeas.length > 1){
+                        // Generate more dates
+                        this.moreDates[matchUserId] = dateIdeas.slice(1);
+
+                    } else{
+                        this.moreDates[matchUserId] = "Talk to your match to get more date ideas!";
+                    }
+                },
+
+                goMessage(matchId){
+                    console.log("Go to message");
+                    console.log(matchId);
+                    window.location.href = "http://localhost:5000/get_all_messages/" + matchId;
                 }
 
             },
@@ -213,6 +295,8 @@
             mounted() {
                 this.getMatches();
                 this.getUserInfo();
+                this.generateMoreDates();
+                this.goMessage();
             },
 
             computed : {
@@ -222,6 +306,23 @@
     );
 
     app.mount("#app"); 
+
+    // document
+    //     .getElementById("read-more")
+    //     .addEventListener("click", function(event) {
+    //       event.preventDefault();
+    //       moreContent = document.getElementById("more-content");
+    //       if (moreContent.style.display == "none") {
+    //         moreContent.style.display = "block";
+    //         this.innerHTML = "Read Less";
+    //       } else {
+    //         moreContent.style.display = "none";
+    //         this.innerHTML = "Read More";
+    //       }
+    //     });
+
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 
 </script>
     
