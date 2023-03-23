@@ -55,24 +55,42 @@
 /* Matches Table */
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+    background-color: #f8f9fa;
 }
 
-table, th, td {
+td{
+    padding: 5px;
+}
+
+/* table, th, td {
     border: #c7c7c7 1px solid;
     border-collapse: collapse;
+}
+
+tr {
+    width: 100%;
 }
 
 th, td {
     padding: 15px;
     margin: 20px;
     text-align: left;
+} */
+
+.match-username{
+    margin: auto;
 }
 
-#profilePic{
-    width: 60px;
-    height: 60px;
+.profile-pic{
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    border: black 1px solid;
+    border: rgb(222, 222, 222) 1px solid;
     padding: 2px;
+}
+
+/* Matches Modal */
+#date-content{
+    display: none;
+    margin: 15px 0;
 }
