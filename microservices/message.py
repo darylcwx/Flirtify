@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
+import requests
 
 
 app = Flask(__name__, template_folder='../templates')
@@ -48,8 +49,25 @@ session_db = Session()
 
 @app.route('/get_all_messages/<match_id>')
 def index(match_id):
-    session['user_id'] = 1
+    # session storing of user id but this will be replaced by the session storage when user logs in
+    session['user_id'] = 849412270214119425
     logged_in_user = session['user_id']
+
+    url = f"http://localhost:5002/match/{match_id}"
+    match = requests.get(url).json()
+    
+    user_id1 = match['data']['user_id1']
+    user_id2 = match['data']['user_id2']
+
+    if logged_in_user == user_id1:
+        receiving_user = user_id2
+    else:
+        receiving_user = user_id1
+
+    url = f"http://localhost:26257/user/{str(receiving_user)}"
+    receiving_user_object = requests.get(url).json()
+
+    receiving_user_name = receiving_user_object['data']['firstname']
 
     messages = session_db.query(Message).filter(Message.match_id == match_id).all()
 
@@ -66,9 +84,9 @@ def index(match_id):
 
     redirect_from = request.args.get('redirect_from')
     if redirect_from:
-        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages, user_id=logged_in_user, match_id=match_id)
+        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
     else:
-        return render_template('message.html', all_messages=all_match_messages, user_id=logged_in_user, match_id=match_id)
+        return render_template('message.html', all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
 
     # return in json format
     # return jsonify({
@@ -108,10 +126,10 @@ def get_messages(match_id):
     else:
         return jsonify(
                 {
-                    "code": 404,
+                    "code": 400,
                     "status_message": "There are no messages."
                 }
-            ), 404
+            ), 400
 
 @app.route('/send_message/<user_id>/<match_id>', methods=['POST'])
 def send_message(user_id, match_id):
