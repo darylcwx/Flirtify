@@ -73,44 +73,86 @@
 </nav>
 
   <body id="app">
+    <h1 class="display-6 text-center my-3">Welcome back, user! <br> 
+      <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
+    </h1>
     <!-- MATCH CARD -->
     <div class="person">
-      <div class="card">
+      <!-- LOADING MATCH CARDS -->
+      <div v-if="!this.matchName" class="card" aria-hidden="true">
         <img
-          src="../images/flirtify.png"
-          class="card-img-top d-flex justify-content-center"
+          src="../images/flirtify-placeholder.png"
+          class="card-img-top d-flex justify-content-center placeholder-glow col-12 bg-light"
+          alt="flirtify"
+        />
+        <div class="card-body">
+          <div class="container mb-4">
+            <div class="row justify-content-between placeholder-glow">
+              <div class="col text-start placeholder">
+                <!-- <h5 class="card-title fs-5 align-middle mt-2"> {{ matchName }} {{ matchAge }}</h5> -->
+              </div>
+              <div class="col-3 placeholder">
+                <!-- <button type="button" class="btn btn-outline-danger" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover">
+                    {{ compatScore }}
+                </button> -->
+              </div>
+            </div>
+          </div>
+
+          <div class="container">
+            <div class="row justify-content-between placeholder-glow">
+              <div class="col-5 placeholder-lg bg-secondary"></div>
+              <div class="col-2"></div>
+              <div class="col-5 placeholder-lg bg-danger"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+
+      <!-- LOADED MATCH CARDS -->
+      <div v-else class="card">
+        <img
+          src="../images/stock-image.jpg"
+          class="card-img-top d-flex justify-content-center center-cropped"
           alt="flirtify"
         />
         <div class="card-body">
           <div class="container">
             <div class="row justify-content-between">
-              <div class="col-4">
-                <h5 class="card-title fs-5 align-middle"> {{ matchName }} {{ matchAge }}</h5>
+              <div class="col text-start">
+                <h5 class="card-title align-middle mt-2"> {{ matchName }} {{ matchAge }}</h5>
               </div>
               <div class="col-3">
-                <div
-                  class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
+                <!-- <div class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
+                  <a href="#" data-toggle="popover" data-content="Compatability score!">
+                      {{ compatScore }}
+                  </a>
+                </div> -->
+                <button type="button" class="btn btn-outline-danger" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover">
                     {{ compatScore }}
-                </div>
+                </button>
               </div>
             </div>
           </div>
-          <p class="card-text ms-3 mt-2 person-content">
-            I voted! for ***fool and caching my cp
-          </p>
 
-          <div id="more-content" style="display: none;">
-            <ul>
-                <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
-                <li>Prefers: 
-                    <ul>
-                        <li v-for="item in matchPreferences">{{ item }}</li>
+          <div v-if="matchContent">
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item" v-for="(v, k) in matchDetails">
+                  <i class="fa-solid fa-circle-heart"></i> 
+                  <b>{{ k }}</b>: {{ v }}
+                </li>
+                <li class="list-group-item">
+                  <b>Prefers: </b>
+                    <ul class="list-group list-group-numbered">
+                        <li class="list-group-item text-capitalize" v-for="item in matchPreferences">{{ item }}</li>
                     </ul>
                 </li>
             </ul>
           </div>
 
-          <a href="#" id="read-more" class="fs-6 ms-3 mt-3">Read More</a>
+          <button @click="toggleContent" class="btn btn-link text-danger mt-3 ms-2" type="button">More Details</button>
+          <!-- <a href="#" @click="toggleContent" class="fs-6 ms-3 mt-3">More Details</a> -->
 
           <!-- FORM FOR MATCHING -->
           <form>
@@ -188,6 +230,7 @@
       const app = Vue.createApp({
         data() {
           return {
+            matchContent: false,
             matchesQueue: [],
             matchName : "",
             matchAge: "",
@@ -231,13 +274,17 @@
               // Getting the compatibility score
               this.compatScore = data['data'][0]['data']['compatibility_result'];
 
+              firstDate = firstMatchData['desiredfirstdate'];
+              firstLetter = firstDate.charAt(0).toUpperCase();
+              firstDate = firstLetter + firstDate.slice(1);
+
               // Showing Matches Details
               firstMatchData = data['data'][0]['data']['user2'];
               this.matchName = firstMatchData['firstname'] + " " + firstMatchData['lastname'] + ',';
               this.matchAge = firstMatchData['age'];
               this.matchPreferences = firstMatchData['preferences'];
               this.matchDetails['Gender'] = firstMatchData['gender'];
-              this.matchDetails['First Date'] = firstMatchData['desiredfirstdate'];
+              this.matchDetails['Desired First Date'] = firstDate;
               this.matchDetails['MBTI'] = firstMatchData['mbti'].toUpperCase();
             })
             .catch(error => {
@@ -322,6 +369,11 @@
                 });
           },
 
+          //function to show more details of match
+          toggleContent(){
+            this.matchContent = !this.matchContent;
+          },
+
           // function that retrieves another compatability result after a swipe
           onSwipe(){
             console.log('swiped');
@@ -339,19 +391,6 @@
 
       app.mount("#app");
 
-      document
-        .getElementById("read-more")
-        .addEventListener("click", function(event) {
-          event.preventDefault();
-          moreContent = document.getElementById("more-content");
-          if (moreContent.style.display == "none") {
-            moreContent.style.display = "block";
-            this.innerHTML = "Read Less";
-          } else {
-            moreContent.style.display = "none";
-            this.innerHTML = "Read More";
-          }
-        });
     </script>
 
     <script
