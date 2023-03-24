@@ -6,11 +6,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, null
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import aliased
 import requests
 import json
+from datetime import datetime
 
 app = Flask(__name__, template_folder='../templates')
 CORS(app)
@@ -37,16 +38,29 @@ class Match(Base):
     datePrefs = Column(ARRAY(String))
     dateIdea = Column(ARRAY(String))
 
-    # dateMatch = Column(Date, nullable = True)
+    dateMatched = Column(Date, nullable = True)
 
     def json(self):
-        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "datePrefs": self.datePrefs, "dateIdea": self.dateIdea} #to include: "date":self.date
+        return {"match_id": self.match_id, "user_id1": self.user_id1, "user_id2": self.user_id2, "user1_match": self.user1_match, "user2_match": self.user2_match, "datePrefs": self.datePrefs, "dateIdea": self.dateIdea, "dateMatched":self.dateMatched}
 
 session = Session()
 
-# Create table
-# Base.metadata.create_all(engine)
+#add table
+@app.route('/add_table')
+def add_table():
+    # Create the database tables
+    Base.metadata.create_all(engine)
+    return "table created successfully"
 
+#drop table
+@app.route('/drop_table')
+def drop_table():
+    # Drop the table
+    def drop_table(txn):
+        txn.execute("DROP TABLE match")
+    run_transaction(engine, drop_table)
+
+    return 'Table dropped successfully.'
 
 # retrieve all matches
 @app.route("/match")
@@ -64,7 +78,7 @@ def get_all():
     return jsonify(
         {
             "code": 404,
-            "message": "You have no matches."
+            "message": "There are no matches."
         }
     ), 404
 
@@ -99,39 +113,10 @@ def find_successful_matches(user_id):
 
     # if matches means swiped - or have created match
     if matches:
-        #filter out successful matches
-        ##### COMPUTATIONALLY TAXING ###############
-        # then we populate the datepref and dateidea
 
         all_matches = []
+        
         for match in matches:
-            # populate dates with date ideas and stuff
-            matchid = match.match_id
-
-            # only if no null, then we start populating
-            if ((match.datePrefs == null) or (match.dateIdea == null)):
-                try:
-                    requests.post("http://localhost:5002/populate_dateprefs/{}".format(matchid))
-
-                    try:
-                        requests.post("http://localhost:5002/date_recommendation/{}".format(matchid))
-
-                    except:
-                        return jsonify(
-                            {
-                                "code": 500,
-                                "message": "An error occurred populating the date recommendation. Please try again."
-                            }
-                        ), 500
-
-                except:
-                    return jsonify(
-                        {
-                            "code": 500,
-                            "message": "An error occurred creating the date preference. Please try again."
-                        }
-                    ), 500
-
             match_details = {
                 'match_id'      : str(match.match_id),
                 'dateIdea'      : match.dateIdea,
@@ -140,6 +125,7 @@ def find_successful_matches(user_id):
                 'user2_match'   : match.user2_match,
                 'user_id1'      : str(match.user_id1),
                 'user_id2'      : str(match.user_id2),
+                'dateMatched'   : match.dateMatched
                 }
             all_matches.append(match_details)
                 
@@ -155,9 +141,7 @@ def find_successful_matches(user_id):
             "code": 404,
             "message": "Match not found."
         }
-    ), 404
-
-    response.headers.add('Access-Control-Allow-Origin', '*')
+        ), 404
 
     return response
 
@@ -184,12 +168,10 @@ def find_matches_by_user_id(user_id):
         }
     ), 404
 
-
 @app.route("/create_match", methods=['POST'])
 def create_match():
     
-    #hidden form data 
-
+    #####hidden form data 
     #person deciding
     user_chooser_id = request.form['user_chooser_id']
 
@@ -198,6 +180,8 @@ def create_match():
 
     #yes or no decision
     decision_form = request.form['decision']
+
+    ifMatch = False
     if decision_form == "1" or decision_form == 1:
         decision = True
     else:
@@ -210,15 +194,40 @@ def create_match():
     #checking if match with this 2 users exists
     if (chooser_as_user2_match and suggested_as_user1_match):
         chooser_as_user2_match.user2_match = decision
-        
+        matchid = chooser_as_user2_match.match_id
+
+        # only if both swiped right on each other then
+        if (chooser_as_user2_match.user2_match == True and suggested_as_user1_match.user1_match == chooser_as_user2_match.user2_match):
+            ifMatch = True
+            chooser_as_user2_match.dateMatched = datetime.today() #.strftime('%Y/%m/%d')
+
         try:
-            # # add a date field here
-            # chooser_as_user2_match.dateMatch = date.today.strftime('%d/%m/%Y')
-
-            # # can also populate the datePref and dateIdea here
-            # # call the two urls
-
             session.commit()
+
+            # only if match then populate datePref and dateIdea
+            if ifMatch:                
+ 
+                try:
+                    requests.post("http://localhost:5002/populate_dateprefs/{}".format(matchid))
+
+                    try:
+                        requests.post("http://localhost:5002/date_recommendation/{}".format(matchid))
+
+                    except:
+                        return jsonify(
+                            {
+                                "code": 500,
+                                "message": "An error occurred populating the date recommendation. Please try again."
+                            }
+                        ), 500
+
+                except:
+                    return jsonify(
+                        {
+                            "code": 500,
+                            "message": "An error occurred creating the date preference. Please try again."
+                        }
+                    ), 500
 
             return jsonify(
                 {
@@ -227,6 +236,7 @@ def create_match():
                 }
             ), 201
 
+
         except:
             return jsonify(
                 {
@@ -234,6 +244,7 @@ def create_match():
                     "message": "An error occurred updating the match. Please try again."
                 }
             ), 500
+
     else:
         new_match = Match(
             user_id1 = user_chooser_id,
