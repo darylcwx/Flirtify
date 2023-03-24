@@ -103,7 +103,6 @@ def find_successful_matches(user_id):
         ##### COMPUTATIONALLY TAXING ###############
         # then we populate the datepref and dateidea
 
-        # successful_matches = sm1.union(m1).union(m2).all()
         all_matches = []
         for match in matches:
             # populate dates with date ideas and stuff
