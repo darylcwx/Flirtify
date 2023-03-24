@@ -166,36 +166,45 @@
       <div class="row chat">
         <div class="col-3"></div>
         <div id="all-messages" class="col-6">
-            {% for message in all_messages %}
-                {% if message.sender_id == user_id %}
-                    <div class="mine messages">
-                        <div class="message last">
-                            {{ message.content }}
+            <div class="text-center fs-3" style="color: #e00747; position: sticky;">
+                {{ receiving_user_name }}
+            </div>
+            {% if all_messages %}
+                {% for message in all_messages %}
+                    {% if message.sender_id == user_id %}
+                        <div class="mine messages">
+                            <div class="message last">
+                                {{ message.content }}
+                            </div>
+                            <small class="report"><a href="">report</a></small>
                         </div>
-                        <small class="report"><a href="">report</a></small>
-                    </div>
-                {% else %}
-                    <div class="yours messages">
-                        <div class="message last">
-                            {{ message.content }}
+                    {% else %}
+                        <div class="yours messages">
+                            <div class="message last">
+                                {{ message.content }}
+                            </div>
+                            <small class="report"><a href="">report</a></small>
                         </div>
-                        <small class="report"><a href="">report</a></small>
-                    </div>
-                {% endif %}
-            {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <div class="text-center fs-5">
+                    There are no new messages yet
+                </div>
+            {% endif %}
         </div>
         <div class="col-3"></div>
     </div>
 
 </div>
 
-<div id = 'app' class = 'container-fluid' style="position: fixed; bottom: 0px; background-color: #fff; z-index: 999; min-height: 140px;">
+<div class = 'container-fluid' style="position: fixed; bottom: 0px; background-color: #fff; z-index: 999; min-height: 140px;">
     <div class="row mb-3">
         <div class="col-3">
 
         </div>
         <div class="col-6">
-            <form action="/send_message/1/1" method="POST" class="needs-validation" novalidate>
+            <form action="/send_message/{{ session['user_id'] }}/{{ match_id }}" method="POST" class="needs-validation" novalidate>
                 <div class="my-5">
                     <div class="row">
                         <div class="col-10">
