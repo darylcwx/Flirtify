@@ -57,22 +57,23 @@ def json(info):
     result = {"userid":info[0], "otherid":info[1], "category":info[2], "message":info[3]}
     return result
 
-user_URL = 'http://localhost:5000/person'
-message_URL = 'http://localhost:5001/message'
+
+
+
+user_URL = 'http://localhost:26257/user/'
+message_URL = 'http://localhost:5000/api/get_all_messages/'
 match_URL = 'http://localhost:5002/match/'
 
-@app.route("/add_report/<string:ids>/<string:category>/<string:message>")
-def add_report(ids, category, message):
-    userid, otherid, matchid = ids.split(',')
-    print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n category:", category, ", regarding: ", message)
+@app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
+def add_report(userid, otherid, matchid):
+    # print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n matchid:", matchid)
 
-    # 1. delete match 
-    # print('\n-----Invoking match microservice-----')
-
-    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
-    # print('match_result:', match_result)  
+    # delete match 
+    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    print('match_result:', match_result)  
 
     reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
+    print(reps)
     if len(reps) >= 5:
         # exceeded
         print('\n\n-----Invoking user microservice-----')
@@ -80,10 +81,17 @@ def add_report(ids, category, message):
         print('user_result:', user_result)   
         report_status = "Number of reports exceeded 5, user deleted"
 
-    elif checkMsg(category, message):
+    else:
+        categories = checkMsg(otherid, matchid)
+        if categories == False:
+            report_status = 'Check user message failed.'
+            categories = []
+        else:
+            report_status = "Number of reports increased by 1, total reports: " + str(len(reps)+1)
+
         # havent exceed, increment by 1
-        get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category, message) VALUES (%s, %s, %s, %s)", (userid, otherid, category, message,))
-        report_status = "Number of reports increased by 1"
+        get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category) VALUES (%s, %s, %s)", (userid, otherid, categories,))
+        
 
 
     report = get_conn().cursor().execute("SELECT * from public.report WHERE userid = %s AND otherid = %s", (userid, otherid, )).fetchone()
@@ -111,11 +119,45 @@ def get_reports():
     ), 404
 
 
+def checkMsg(otherid, matchid):
+    messages = invoke_http(message_URL + matchid, method='DELETE', json=None) 
+    # messages = [ 
+    #     {'id': 1,
+    #      'match_id': 1,
+    #      'sender_id': 456,
+    #      'content': 'fuck'},
+    #      {'id': 2,
+    #      'match_id': 1,
+    #      'sender_id': 456,
+    #      'content': 'stupid'},
+    #      {'id': 3,
+    #      'match_id': 1,
+    #      'sender_id': 456,
+    #      'content': 'dumbass'},
+    #      {'id': 4,
+    #      'match_id': 1,
+    #      'sender_id': 456,
+    #      'content': 'tf'},
+    #      {'id': 5,
+    #      'match_id': 1,
+    #      'sender_id': 456,
+    #      'content': 'hello'},
+    # ]
+    print(messages)
 
-def checkMsg(cat, message):
-    # categories = ['sexual', 'discriminatory', 'insult', 'inappropriate']
+    text = ''
+    count = 0
+    for msg in messages:
+        if count > 20:
+            break
+
+        elif str(msg['sender_id']) == otherid:
+            text += msg['content'] + ' '
+            count += 1
+
+    print('text: ', text)
     data = {
-        'text': message,
+        'text': text,
         'mode': 'standard',
         'lang': 'en',
         'opt_countries': 'sg',
@@ -126,15 +168,19 @@ def checkMsg(cat, message):
     r = requests.post('https://api.sightengine.com/1.0/text/check.json', data = data)
 
     output = jsonnn.loads(r.text)
-    print(output['profanity']['matches'])
+    print(output)
+
     if output['status'] != 'success':
         return False
 
+    if len(output['profanity']['matches']) == 0:
+        return False
+    
+    categories = []
     for item in output['profanity']['matches']:
-        if item['type'] == cat:
-            return True 
+        categories.append(item['type'])
+        return categories
 
-    return False
 
 
 if __name__ == '__main__':
