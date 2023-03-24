@@ -62,7 +62,7 @@
 
         <!-- IF NO MATCHES -->
         <div class="text-center mt-5" v-if="matchesResult.length == 0">
-            <h1>You have no matches <b>YET</b>!</h1>
+            <h1 class="display-5">You have no matches <b>YET</b>!</h1>
             <form action="../templates/home.html">
                 <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
             </form>
@@ -70,90 +70,80 @@
 
         <!-- IF MATCHES -->
         <div class="text-center mt-5" v-else>
-            <h1 class="display-3">Here are your matches!</h1>
-
-        </div>
-        <!-- <table class="d-flex justify-content-center mt-5"> -->
-        <div class="table-responsive">
-            <table class="table table-hover mt-5 align-middle">
-                <thead>
-                <tr>
-                    <th class="text-center" scope="col">Name</th>
-                    <th scope="col">MBTI</th>
-                    <th scope="col">Age</th>
-                    <th scope="col" class="ps-5">Actions</th>
-                </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                <tr v-for="item in matchesResult" scope="row">
-                    <!-- <td></td> -->
-                    <!-- <td>Username</td> -->
-                    <td class="d-flex justify-content-center">
-                        <img class="profile-pic" src="../images/flirtify-logo.png" alt="Profile Picture"> 
-                        <span class="fw-semibold match-username mx-5">{{ matchesInfo[item.user_id2]['info']['firstname'] }}</span>
-                    </td>
-                    <td class="text-uppercase">{{ matchesInfo[item.user_id2]['info']['mbti'] }}</td>
-                    <td>{{ matchesInfo[item.user_id2]['info']['age'] }}</td>
-                    <td>
-                        <!-- Button trigger modal -->
-                        <!-- Popup pls -->
-                        <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                            <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
-                        </button>
-                        
-                        <!-- Modal -->
-                        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                        {{ matchesInfo[item.user_id2]['info']['firstname'] }} 
-                                        <a href="" class="text-muted" data-bs-toggle="popover" data-bs-trigger="hover focus" data-bs-placement="right" data-bs-content="Report">
-                                            <i class="fa-solid fa-circle-exclamation"></i>
-                                        </a>
-                                    </h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-center">
-                                    <p class="fw-semibold">First Date Idea!</p>
-                                    <h3> {{ matchesInfo[item.user_id2]['dateIdea'][0] }}</h3>
-
-                                    <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
-                                    <div v-if="typeof moreDates[item.user_id2] == object">
-                                        <p class="fw-bold my-3">More Date Ideas</p>
-                                        <ul class="list-group" v-for="item in moreDates[item.user_id2]">
-                                            <li class="list-group-item"> {{ item }} </li>
-                                        </ul>
+            <h1 class="display-5">
+                Here are your matches
+                <i class="fa-sharp fa-solid fa-heart fa-beat-fade" style="color: #cd5864;"></i>
+            </h1>
+            <!-- <table class="d-flex justify-content-center mt-5"> -->
+            <div class="table-responsive">
+                <table class="table table-hover mt-5 align-middle">
+                    <thead>
+                    <tr>
+                        <th class="text-center" scope="col">Name</th>
+                        <th scope="col">MBTI</th>
+                        <th scope="col">Age</th>
+                        <th scope="col" class="ps-5">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody class="table-group-divider">
+                    <tr v-for="item in matchesResult" scope="row" class="matches-row">
+                        <!-- <td></td> -->
+                        <!-- <td>Username</td> -->
+                        <td class="d-flex justify-content-center">
+                            <img class="matches-profile-pic" src="../images/stock-image.jpg" alt="Profile Picture"> 
+                            <span class="fw-semibold match-username mx-5">{{ matchesInfo[item.user_id2]['info']['firstname'] }}</span>
+                        </td>
+                        <td class="text-uppercase">{{ matchesInfo[item.user_id2]['info']['mbti'] }}</td>
+                        <td>{{ matchesInfo[item.user_id2]['info']['age'] }}</td>
+                        <td>
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
+                            </button>
+                            
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                            {{ matchesInfo[item.user_id2]['info']['firstname'] }} 
+                                            <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
+                                                <i class="fa-solid fa-circle-exclamation"></i>
+                                            </a>
+                                        </h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
-                                    <div v-else>
-                                        <p>{{ moreDates[item.user_id2] }}</p>
+                                    <div class="modal-body text-center">
+                                        <p class="fw-semibold">First Date Idea</p>
+                                        <h3> {{ matchesInfo[item.user_id2]['dateIdea'][0] }}</h3>
+
+                                        <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
+                                        <div v-if="typeof moreDates[item.user_id2] == object">
+                                            <p class="fw-bold my-3">More Date Ideas</p>
+                                            <ul class="list-group" v-for="item in moreDates[item.user_id2]">
+                                                <li class="list-group-item"> {{ item }} </li>
+                                            </ul>
+                                        </div>
+                                        <div v-else>
+                                            <p>{{ moreDates[item.user_id2] }}</p>
+                                        </div>
                                     </div>
-                                    <!-- <div id="date-content" style="display: none;">
-                                        <ul>
-                                            <li v-for="(v, k) in matchDetails">{{ k }} : {{ v }}</li>
-                                            <li>Prefers: 
-                                                <ul>
-                                                    <li v-for="item in matchPreferences">{{ item }}</li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </div> -->
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item.user_id2)">Date Ideas</button>
+                                        <!-- <button type="button" class="btn btn-primary">Report</button> -->
+                                    </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    
-                                    <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item.user_id2)">Date Ideas</button>
-                                    <button type="button" class="btn btn-primary">Report</button>
                                 </div>
                             </div>
-                            </div>
-                        </div>
-                        <!-- Tag match_id to each button -->
-                        <button type="button" class="btn btn-danger" @click="goMessage(matchesInfo[item.user_id2]['matchId'])">Message <i class="fa-regular fa-message"></i></button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+                            <!-- Tag match_id to each button -->
+                            <button type="button" class="btn btn-danger" @click="goMessage(matchesInfo[item.user_id2]['matchId'])">Message <i class="fa-regular fa-message"></i></button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -169,7 +159,6 @@
         {
             data(){
 
-                // Matches Data
                 // matchesResult is the array that will be used to display the matches using match microservice
                 // matchesInfo is the array that will be used to store the information of the matches that accesses user.py microservice. Key is the user_id and value is the information of the user
                 // moreDates is the object that will be used to store the date ideas of the matches. Key is the match_id and value is the date idea
@@ -217,6 +206,8 @@
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['dateIdea'] = dateIdea;
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['matchId'] = matchId;
                                     this.getUserInfo(this.matchesData[i]['user_id2']);
+                                    console.log('=============================');
+                                    console.log('Current User is: ' + user_id);
                                 } else{
                                     this.matchesInfo[this.matchesData[i]['user_id1']] = {};
                                     this.matchesInfo[this.matchesData[i]['user_id1']]['dateIdea'] = dateIdea;
@@ -278,7 +269,6 @@
                     if (dateIdeas.length > 1){
                         // Generate more dates
                         this.moreDates[matchUserId] = dateIdeas.slice(1);
-
                     } else{
                         this.moreDates[matchUserId] = "Talk to your match to get more date ideas!";
                     }
@@ -307,22 +297,9 @@
 
     app.mount("#app"); 
 
-    // document
-    //     .getElementById("read-more")
-    //     .addEventListener("click", function(event) {
-    //       event.preventDefault();
-    //       moreContent = document.getElementById("more-content");
-    //       if (moreContent.style.display == "none") {
-    //         moreContent.style.display = "block";
-    //         this.innerHTML = "Read Less";
-    //       } else {
-    //         moreContent.style.display = "none";
-    //         this.innerHTML = "Read More";
-    //       }
-    //     });
-
-    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-    const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+    $(function () {
+        $('[data-toggle="popover"]').popover()
+    })
 
 </script>
     
