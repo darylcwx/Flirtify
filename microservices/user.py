@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from itsdangerous import exc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
@@ -12,7 +13,7 @@ db = SQLAlchemy(app)
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
@@ -127,10 +128,10 @@ def create_user(email):
         ), 400
         
     data = request.get_json()
-    user = User(**data)
+    user = User(email=email, **data)
     
-    session.add(user)
-    session.commit()
+    # session.add(user)
+    # session.commit()
     
     try:
         session.add(user)
@@ -181,68 +182,79 @@ def delete_user(userid):
 @app.route("/user/<string:userid>", methods=['PUT'])
 def update_user(userid):
     user_search = session.query(User).filter_by(id=userid).first()
-    if user_search:
-        data = request.get_json()
-        if data['firstname'] is not None:
-            user_search.firstname = data['firstname']
-        else:
-            data['firstname'] = user_search.firstname
-        if data['lastname'] is not None:
-            user_search.lastname = data['lastname']
-        else:
-            data['lastname'] = user_search.lastname
-        if data['gender'] is not None:
-            user_search.gender = data['gender']
-        else:
-            data['gender'] = user_search.gender
-        if data['birthdate'] is not None:
-            user_search.birthdate = data['birthdate']
-        else:
-            data['birthdate'] = user_search.birthdate
-        if data['age'] is not None:
-            user_search.age = data['age']
-        else:
-            data['age'] = user_search.age
-        if data['date_joined'] is not None:
-            user_search.date_joined = data['date_joined']
-        else:
-            data['date_joined'] = user_search.date_joined
-        if data['preferences'] is not None:
-            user_search.preferences = data['preferences']
-        else:
-            data['preferences'] = user_search.preferences
-        if data['desiredfirstdate'] is not None:
-            user_search.desiredfirstdate = data['desiredfirstdate']
-        else:
-            data['desiredfirstdate'] = user_search.desiredfirstdate
-        if data['mbti'] is not None:
-            user_search.mbti = data['mbti']
-        else:
-            data['mbti'] = user_search.mbti
-        if data['email'] is not None:
-            user_search.email = data['email']
-        else:
-            data['email'] = user_search.email
-        if data['password'] is not None:
-            user_search.password = data['password']
-        else:
-            data['password'] = user_search.password
-        session.commit()
+    try:
+        if user_search:
+            data = request.get_json()
+            if data['firstname'] is not None:
+                user_search.firstname = data['firstname']
+            else:
+                data['firstname'] = user_search.firstname
+            if data['lastname'] is not None:
+                user_search.lastname = data['lastname']
+            else:
+                data['lastname'] = user_search.lastname
+            if data['gender'] is not None:
+                user_search.gender = data['gender']
+            else:
+                data['gender'] = user_search.gender
+            if data['birthdate'] is not None:
+                user_search.birthdate = data['birthdate']
+            else:
+                data['birthdate'] = user_search.birthdate
+            if data['age'] is not None:
+                user_search.age = data['age']
+            else:
+                data['age'] = user_search.age
+            if data['date_joined'] is not None:
+                user_search.date_joined = data['date_joined']
+            else:
+                data['date_joined'] = user_search.date_joined
+            if data['preferences'] is not None:
+                user_search.preferences = data['preferences']
+            else:
+                data['preferences'] = user_search.preferences
+            if data['desiredfirstdate'] is not None:
+                user_search.desiredfirstdate = data['desiredfirstdate']
+            else:
+                data['desiredfirstdate'] = user_search.desiredfirstdate
+            if data['mbti'] is not None:
+                user_search.mbti = data['mbti']
+            else:
+                data['mbti'] = user_search.mbti
+            if data['email'] is not None:
+                user_search.email = data['email']
+            else:
+                data['email'] = user_search.email
+            if data['password'] is not None:
+                user_search.password = data['password']
+            else:
+                data['password'] = user_search.password
+            session.commit()
+            return jsonify(
+                {
+                    "code": 200,
+                    "data": user_search.json()
+                }
+            )
+        return jsonify(
+        {
+            "code": 404,
+            "data": {
+                "id": userid
+            },
+            "message": "User not found."
+        }
+        ), 404
+    except:
         return jsonify(
             {
-                "code": 200,
-                "data": user_search.json()
+                "code": 500,
+                "data": {
+                    "userid": userid
+                },
+                "message": "An error occurred updating the user."
             }
-        )
-    return jsonify(
-    {
-        "code": 404,
-        "data": {
-            "id": userid
-        },
-        "message": "User not found."
-    }
-    ), 404
+        ), 500
 
 @app.context_processor
 def inject_navbar():
