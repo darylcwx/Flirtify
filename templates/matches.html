@@ -60,91 +60,119 @@
 <body>
     <div id="app" class="container-fluid">
 
-        <!-- IF NO MATCHES -->
-        <div class="text-center mt-5" v-if="matchesResult.length == 0">
-            <h1 class="display-5">You have no matches <b>YET</b>!</h1>
-            <form action="../templates/home.html">
-                <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
-            </form>
-        </div>
-
-        <!-- IF MATCHES -->
-        <div class="text-center mt-5" v-else>
-            <h1 class="display-5">
-                Here are your matches
-                <i class="fa-sharp fa-solid fa-heart fa-beat-fade" style="color: #cd5864;"></i>
-            </h1>
-            <!-- <table class="d-flex justify-content-center mt-5"> -->
-            <div class="table-responsive">
-                <table class="table table-hover mt-5 align-middle">
-                    <thead>
-                    <tr>
-                        <th class="text-center" scope="col">Name</th>
-                        <th scope="col">MBTI</th>
-                        <th scope="col">Age</th>
-                        <th scope="col" class="ps-5">Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody class="table-group-divider">
-                    <tr v-for="item in matchesResult" scope="row" class="matches-row">
-                        <!-- <td></td> -->
-                        <!-- <td>Username</td> -->
-                        <td class="d-flex justify-content-center">
-                            <img class="matches-profile-pic" src="../images/stock-image.jpg" alt="Profile Picture"> 
-                            <span class="fw-semibold match-username mx-5">{{ matchesInfo[item.user_id2]['info']['firstname'] }}</span>
-                        </td>
-                        <td class="text-uppercase">{{ matchesInfo[item.user_id2]['info']['mbti'] }}</td>
-                        <td>{{ matchesInfo[item.user_id2]['info']['age'] }}</td>
-                        <td>
-                            <!-- Button trigger modal -->
-                            <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center" style="color: #515967;"></i>
-                            </button>
-                            
-                            <!-- Modal -->
-                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                            {{ matchesInfo[item.user_id2]['info']['firstname'] }} 
-                                            <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
-                                                <i class="fa-solid fa-circle-exclamation"></i>
-                                            </a>
-                                        </h1>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-center">
-                                        <p class="fw-semibold">First Date Idea</p>
-                                        <h3> {{ matchesInfo[item.user_id2]['dateIdea'][0] }}</h3>
-
-                                        <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
-                                        <div v-if="typeof moreDates[item.user_id2] == object">
-                                            <p class="fw-bold my-3">More Date Ideas</p>
-                                            <ul class="list-group" v-for="item in moreDates[item.user_id2]">
-                                                <li class="list-group-item"> {{ item }} </li>
-                                            </ul>
-                                        </div>
-                                        <div v-else>
-                                            <p>{{ moreDates[item.user_id2] }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                        <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item.user_id2)">Date Ideas</button>
-                                        <!-- <button type="button" class="btn btn-primary">Report</button> -->
-                                    </div>
-                                </div>
-                                </div>
-                            </div>
-                            <!-- Tag match_id to each button -->
-                            <button type="button" class="btn btn-danger" @click="goMessage(matchesInfo[item.user_id2]['matchId'])">Message <i class="fa-regular fa-message"></i></button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        <!-- LOADING PULSE ANIMATION -->
+        <div v-if="matchesResult.length == 0" >
+            <div class="position-absolute top-50 start-50 translate-middle">
+                <div class="d-flex justify-content-center mt-5">
+                    <div class="spinner-border text-danger" style="width: 5rem; height: 5rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <h2 class="text-center mt-4"> Loading your matching results!</h2>
             </div>
         </div>
+
+        <!-- DONE LOADING -->
+        <div v-else>
+
+            <!-- IF MATCHES  -->
+            <div class="text-center mt-5" v-if="matchesResult.length > 0">
+                <h1 class="display-5">
+                    <span v-if="matchesResult.length==1"> Here is your match  </span>
+                    <span v-else> Here are your matches  </span>
+                    
+                    <i class="fa-sharp fa-solid fa-heart fa-beat-fade" style="color: #cd5864;"></i>
+                </h1>
+                <p class="text-muted font-monospace mt-2">Flirt like there's no tomorrow</p>
+                <!-- <table class="d-flex justify-content-center mt-5"> -->
+                <div class="table-responsive">
+                    <table class="table table-hover mt-3 align-middle">
+                        <thead>
+                        <tr>
+                            <!-- <th scope="col"></th> -->
+                            <th class="text-center" scope="col">Name</th>
+                            <th scope="col">Matched for</th>
+                            <th scope="col">MBTI</th>
+                            <th scope="col">Age</th>
+                            <th scope="col" class="ps-5">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody class="table-group-divider">
+                        <tr v-for="item in matchesInfo" :key="item.user_id2" scope="row" class="matches-row">
+                            <!-- <td></td> -->
+                            <!-- <td>Username</td> -->
+                            <td class="d-flex justify-content-center matches-profile-name">
+                                <img class="matches-profile-pic" src="../images/stock-image.jpg" alt="Profile Picture"> 
+                                <span class="fw-semibold match-username mx-5">{{ item["info"]['firstname'] }}</span>
+                            </td>
+                            
+                            <td> {{item["daysMatched"]}} </td>
+                            <td class="text-uppercase"> {{item['info']['mbti']}} </td>
+                            <td>{{item['info']['age']}}</td>
+            
+                            <td>
+                                <!-- Button trigger modal -->
+                                <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                    <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center"></i>
+                                </button>
+                                
+                                <!-- Modal -->
+                                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                                {{ item['info']['firstname'] }} 
+                                                <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
+                                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                                </a>
+                                            </h1>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <p class="fw-semibold">First Date Idea</p>
+                                            <h3> {{ item.dateIdea[0] }}</h3>
+    
+                                            <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
+                                            <div v-if="typeof moreDates[item.matchId] == object">
+                                                <p class="fw-bold my-3">More Date Ideas</p>
+                                                <ul class="list-group" v-for="ideas in moreDates[item.matchId]">
+                                                    <li class="list-group-item"> {{ ideas }} </li>
+                                                </ul>
+                                            </div>
+                                            <div v-else>
+                                                <p>{{ moreDates[item.matchId] }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item)">More Date Ideas</button>
+                                            <!-- <button type="button" class="btn btn-primary">Report</button> -->
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
+                                <!-- Tag match_id to each button -->
+                                <button type="button" class="btn btn-danger" @click="goMessage(item.matchId)">Message <i class="fa-regular fa-message"></i></button>
+                                <!-- <router-link :to="'http://localhost:5000/get_all_messages/{{ matchesInfo[item.user_id2]['matchId'] }}'">
+                                    <button type="button" class="btn btn-danger">Message <i class="fa-regular fa-message"></i></button>
+                                </router-link>  -->
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- IF NO MATCHES -->
+            <div class="text-center mt-5" v-else>
+                <h1 class="display-5">You have no matches <b>YET</b>!</h1>
+                <form action="../templates/home.html">
+                    <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
+                </form>
+            </div>
+        </div>
+        
     </div>
 
 <script>
@@ -153,7 +181,7 @@
     // var user_id = session['user_id'];
 
     //for testing
-    var user_id = "849412270214119425";
+    var user_id = 849811382203678721;
 
     const app = Vue.createApp(
         {
@@ -172,7 +200,7 @@
 
             methods : {
                 getMatches() {
-                    axios.get("http://localhost:5002/successful_match/849412270214119425", 
+                    axios.get("http://localhost:5002/successful_match/849811382203678721", 
                         {
                           headers: {
                                 "Access-Control-Allow-Origin": '*'
@@ -180,21 +208,42 @@
                         })
                     // fetch(
                     // //   "http://localhost:5002/successful_match/" + user_id
-                    // "http://localhost:5002/successful_match/849412270214119425" 
+                    // "http://localhost:5002/successful_match/849811382185000961" 
                     // )
                     // .then((response) => response.json())
                     .then(response => {
                         // Getting the successful matches from a user_id
                         this.matchesData = response.data.data;
+                        console.log('This is the successful matches: ');
                         console.log(JSON.stringify(this.matchesData));
+                        console.log('=====================================');
+
                         //Iterate through the successful matches and push them into the table
                         if (this.matchesData.length > 0){
                             for (var i = 0; i < this.matchesData.length; i++) {
                                 this.matchesResult.push(this.matchesData[i]);
-                                // console.log(this.matchesResult);
-                                console.log("============================")
-                                console.log('This is the date idea:')
-                                console.log(this.matchesData[i]['dateIdea'][0]);
+
+                                // console.log(JSON.stringify(this.matchesResult));
+                                // console.log("============================");
+                                // console.log(this.matchesData[i]['user_id2']);
+                                // console.log('This is the date idea:')
+                                // console.log(this.matchesData[i]['dateIdea'][0]);
+
+                                // Getting the number of days since matched date
+                                let currentDate = new Date();
+                                console.log(this.matchesData[i]['user_id1'],this.matchesData[i]['dateMatched'])
+                                let dateMatched = new Date(this.matchesData[i]['dateMatched']);
+                                let daysMatched = Math.floor((currentDate - dateMatched) / (1000 * 60 * 60 * 24));
+                                console.log('This is the number of days since matched: ' + daysMatched);
+                                if (daysMatched > 7){
+                                    daysMatched = '1w';
+                                } else if (daysMatched > 30){
+                                    daysMatched = '1m';
+                                } else if (daysMatched > 365){
+                                    daysMatched = '1y';
+                                } else{
+                                    daysMatched = daysMatched + 'd';
+                                }
 
                                 let dateIdea = this.matchesData[i]['dateIdea'];
                                 let matchId = this.matchesData[i]['match_id'];
@@ -204,13 +253,13 @@
                                 if (matchUser1 == user_id){
                                     this.matchesInfo[this.matchesData[i]['user_id2']] = {};
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['dateIdea'] = dateIdea;
+                                    this.matchesInfo[this.matchesData[i]['user_id2']]['daysMatched'] = daysMatched;
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['matchId'] = matchId;
                                     this.getUserInfo(this.matchesData[i]['user_id2']);
-                                    console.log('=============================');
-                                    console.log('Current User is: ' + user_id);
                                 } else{
                                     this.matchesInfo[this.matchesData[i]['user_id1']] = {};
                                     this.matchesInfo[this.matchesData[i]['user_id1']]['dateIdea'] = dateIdea;
+                                    this.matchesInfo[this.matchesData[i]['user_id1']]['daysMatched'] = daysMatched;
                                     this.matchesInfo[this.matchesData[i]['user_id1']]['matchId'] = matchId;
                                     this.getUserInfo(this.matchesData[i]['user_id1']);
                                 }
@@ -220,14 +269,12 @@
                             this.matchesResult = 0;
                         }
 
-                        console.log('=============================');
-                        console.log('Matches Info');
                         // this.matchesInfo = JSON.stringify(this.matchesInfo);
                         // console.log(JSON.stringify(this.matchesInfo));
                         // console.log(this.matchesInfo["849412270226374657"]['dateIdea']);
                         // console.log('=============================');
                         // console.log('Matches Result');
-                        // console.log(this.matchesResult)
+                        // console.log(JSON.stringify(this.matchesResult));
                         // console.log('=============================');
 
                     })
@@ -254,8 +301,12 @@
 
                         // Storing the user's information into the matchesInfo array
                         this.matchesInfo[matchUserId]['info'] = data['data'];
+                        console.log('=============================');
                         console.log('Matches Info');
                         console.log(JSON.stringify(this.matchesInfo));
+                        console.log('=============================');
+                        console.log('This is the info of the match');
+                        console.log(JSON.stringify(this.matchesInfo[matchUserId]['info']));
 
                     })
                     .catch(error => {
@@ -263,9 +314,10 @@
                     });
                 },
 
-                generateMoreDates(matchUserId){
+                generateMoreDates(info){
                     console.log("Generate more dates");
-                    dateIdeas = this.matchesInfo[matchUserId.toString()]['dateIdea'];
+                    dateIdeas = info['dateIdea'];
+                    matchUserId = info['matchId'];
                     if (dateIdeas.length > 1){
                         // Generate more dates
                         this.moreDates[matchUserId] = dateIdeas.slice(1);
@@ -276,8 +328,9 @@
 
                 goMessage(matchId){
                     console.log("Go to message");
-                    console.log(matchId);
-                    window.location.href = "http://localhost:5000/get_all_messages/" + matchId;
+                    console.log('This is the match id: ' + matchId);
+                    // window.location.href= "https://www.google.com.sg/"
+                    window.location.href = "http://127.0.0.1:5000//get_all_messages/" + matchId;
                 }
 
             },
