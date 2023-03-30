@@ -58,26 +58,25 @@
     </nav>
 
 <body>
-    <div class="border border-secondary rounded login p-5">
-        <div class="text-center mt-5">
-            <img src="../images/flirtify.png" alt="Flirtify Logo">
-            <h3 class="mt-4">Find your perfect match!</h3>
-        </div>
-        <form class="my-5">
-            <div class="mb-3">
-                <label for="inputEmail" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
-            </div>
-            <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
-                <input type="password" class="form-control" id="inputPassword">
-            </div>
-            <button type="submit" class="btn btn-danger">Submit</button>
-        </form>
-    </div>
 
 <div id = 'app' class = 'container-fluid'>
-
+  <div class="login p-5">
+    <div class="text-center mt-5">
+        <img src="../images/flirtify.png" alt="Flirtify Logo">
+        <h3 class="mt-4">Find your perfect match! </h3><i class="fa-regular fa-message-heart fa-shake"></i>
+    </div>
+    <form class="my-5" @submit.prevent="tryLogin">
+        <div class="mb-3">
+            <label for="inputEmail" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+        </div>
+        <div class="mb-3">
+            <label for="inputPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="inputPassword">
+        </div>
+        <button type="submit" class="btn btn-danger">Submit</button>
+    </form>
+  </div>
 </div>
 
 
@@ -87,15 +86,37 @@
         {
             data(){
                 return {
+                  email: "",
+                  password: ""
                 }
             },
 
             methods : {
+              tryLogin(){
+                axios.post('http://localhost:5009/login', {
+                  email: this.email,
+                  password: this.password
+                })
+                .then(function (response) {
+                  console.log(response);
+
+                  if(response.message == "Login Successful"){
+                    window.location.href = "home.html";
+                  }
+                  else{
+                    alert("Invalid email or password");
+                  }
+
+                })
+                .catch(function (error) {
+                  console.log(error);
+                });
+              
+              }
 
             },
 
             mounted() {
-
             },
 
             computed : {
