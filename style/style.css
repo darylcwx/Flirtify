@@ -6,6 +6,10 @@
 
 }
 
+body{
+    background-color: #fcdcdc !important;
+}
+
 .person{
     margin: auto;
     /* Changing the width will change the size of the card */
