@@ -35,14 +35,11 @@ class Report(db.Model):
     
     userid = db.Column(db.Integer, primary_key=True)
     otherid = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(256), nullable=False)
-    message = db.Column(db.String(256), nullable=False)
+    matchid = db.Column(db.Integer)
     
-    def __init__(self, userid, otherid, category, message):
+    def __init__(self, userid, otherid, matchid):
         self.userid = userid
         self.otherid = otherid
-        self.category = category
-        self.message = message
 
 def get_conn():
     conn = psycopg.connect(**conn_params, autocommit=True)
@@ -54,7 +51,7 @@ def run_sql(sql):
         
 def json(info):
     result = {'info':info[0]}
-    result = {"userid":info[0], "otherid":info[1], "category":info[2], "message":info[3]}
+    result = {"userid":info[0], "otherid":info[1], "matchid":info[2]}
     return result
 
 
@@ -72,51 +69,55 @@ def add_report(userid, otherid, matchid):
     match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
     print('match_result:', match_result)  
 
+    # check messages
+    categories = checkMsg(otherid, matchid)
+    if categories == False:
+        report_status = 'Check user message failed.'
+        categories = []
+        return jsonify(
+            {
+                "code": 500,
+                "data": {
+                    "status": 'Check user message failed. Please try again later.'
+                    }
+            }
+        )
+
+    # add report into database
+    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category) VALUES (%s, %s, %s)", (userid, otherid, categories,))
     reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
-    print(reps)
+
     if len(reps) >= 5:
-        # exceeded
         print('\n\n-----Invoking user microservice-----')
         user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
         print('user_result:', user_result)   
+        
         report_status = "Number of reports exceeded 5, user deleted"
 
     else:
-        categories = checkMsg(otherid, matchid)
-        if categories == False:
-            report_status = 'Check user message failed.'
-            categories = []
-        else:
-            report_status = "Number of reports increased by 1, total reports: " + str(len(reps)+1)
+        report_status = "Number of reports increased by 1, total reports: " + str(len(reps)+1)
 
-        # havent exceed, increment by 1
-        get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category) VALUES (%s, %s, %s)", (userid, otherid, categories,))
-        
-
-
-    report = get_conn().cursor().execute("SELECT * from public.report WHERE userid = %s AND otherid = %s", (userid, otherid, )).fetchone()
     return jsonify(
             {
                 "code": 201,
                 "data": {
-                    "report": json(report),
                     "status": report_status
                     }
             }
         )
 
 
-@app.route('/reports')
-def get_reports():
-    reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
-    if (reports):
-        return jsonify(reports)
-    return jsonify(
-        {
-            "code": 404,
-            "message": "no reports."
-        }
-    ), 404
+# @app.route('/reports')
+# def get_reports():
+#     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+#     if (reports):
+#         return jsonify(reports)
+#     return jsonify(
+#         {
+#             "code": 404,
+#             "message": "no reports."
+#         }
+#     ), 404
 
 
 def checkMsg(otherid, matchid):
@@ -180,7 +181,6 @@ def checkMsg(otherid, matchid):
     for item in output['profanity']['matches']:
         categories.append(item['type'])
         return categories
-
 
 
 if __name__ == '__main__':
