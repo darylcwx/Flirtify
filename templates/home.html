@@ -89,20 +89,20 @@
         <div class="card-body">
           <div class="container mb-4">
             <div class="row justify-content-between placeholder-glow">
-              <div class="col text-start placeholder">
-                <!-- <h5 class="card-title fs-5 align-middle mt-2"> {{ matchName }} {{ matchAge }}</h5> -->
-              </div>
-              <div class="col-3 placeholder">
-                <!-- <button type="button" class="btn btn-outline-danger" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover">
-                    {{ compatScore }}
-                </button> -->
-              </div>
+              <div class="col-4 placeholder"></div>
+              <div class="col-2 placeholder bg-danger"></div>
+            </div>
+            <div class="row justify-content-between placeholder-glow my-3">
+              <div class="col-7 placeholder"></div>
+            </div>
+            <div class="row justify-content-between placeholder-glow">
+              <div class="col-4 placeholder"></div>
             </div>
           </div>
 
           <div class="container">
             <div class="row justify-content-between placeholder-glow">
-              <div class="col-5 placeholder bg-secondary"></div>
+              <div class="col-5 placeholder"></div>
               <div class="col-2"></div>
               <div class="col-5 placeholder bg-danger"></div>
           </div>
@@ -158,7 +158,8 @@
           <!-- FORM FOR MATCHING -->
           <form>
             <div class="container text-center mt-4">
-              <div class="row justify-content-between">
+              <!-- <div class="row justify-content-between"> -->
+              <div class="d-grid gap-2 d-md-block">
                 <div class="col-5">
                   <!-- BUTTON TRIGGERS THE NEXT CARD -->
                   <button type="button" class="btn btn-lg btn-secondary" id="next-btn">
@@ -225,7 +226,7 @@
 
     <script>
       // For Testing
-      var userId = 849811382189850625;
+      var userId = 849811382203678721 ;
 
       // Querying the microservices
       const app = Vue.createApp({
@@ -268,7 +269,10 @@
           loadFirstMatch(userId){
             fetch(
               // "http://localhost:7100/get_queue/" +user_id "/1"
-              "http://localhost:7100/get_queue/849811382189850625/1"
+              "http://localhost:7100/get_queue/849811382203678721/1",
+              {
+                mode: 'cors',
+              }
             )
             .then((response) => response.json())
             .then((data) => {
@@ -300,7 +304,10 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/849811382189850625/2"
+              "http://localhost:7100/get_queue_async/849811382203678721/2",
+              {
+                mode: 'cors',
+              }
             )
               .then((response) => response.json())
               .then((data) => {
@@ -355,9 +362,9 @@
 
             fetch(
               "http://localhost:7100/get_queue_msg",
-                        {
-                            mode: 'cors',
-                        }
+                  {
+                      mode: 'cors',
+                  }
             )
               .then((response) => response.json())
               .then((data) => {
