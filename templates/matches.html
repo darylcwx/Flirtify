@@ -98,9 +98,9 @@
                         </tr>
                         </thead>
                         <tbody class="table-group-divider">
-                        <tr v-for="item in matchesInfo" :key="item.user_id2" scope="row" class="matches-row">
-                            <!-- <td></td> -->
-                            <!-- <td>Username</td> -->
+                        <tr v-for="(item,idx) in matchesInfo" :key="item.user_id2" scope="row" class="matches-row">
+                            <!-- ITEM IS THE VALUE in matchesInfo, idx is the key -->
+
                             <td class="d-flex justify-content-center matches-profile-name">
                                 <img class="matches-profile-pic" src="../images/stock-image.jpg" alt="Profile Picture"> 
                                 <span class="fw-semibold match-username mx-5">{{ item["info"]['firstname'] }}</span>
