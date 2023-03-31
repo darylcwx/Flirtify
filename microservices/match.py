@@ -13,6 +13,9 @@ import requests
 import json
 
 app = Flask(__name__, template_folder='../templates')
+app.config['SECRET_KEY'] = 'flirtify_esd_micro'
+app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
+app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
@@ -185,23 +188,82 @@ def find_matches_by_user_id(user_id):
     ), 404
 
 
-@app.route("/create_match", methods=['POST'])
-def create_match():
+# @app.route("/create_match", methods=['POST'])
+# def create_match():
     
-    #hidden form data 
+#     #hidden form data 
 
-    #person deciding
-    user_chooser_id = request.form['user_chooser_id']
+#     #person deciding
+#     user_chooser_id = request.form['user_chooser_id']
+#     print(user_chooser_id)
+#     #person that is recommended
+#     user_suggested_id = request.form['user_suggested_id']
 
-    #person that is recommended
-    user_suggested_id = request.form['user_suggested_id']
+#     #yes or no decision
+#     decision_form = request.form['decision']
+#     if decision_form == "1" or decision_form == 1:
+#         decision = True
+#     else:
+#         decision = False
 
-    #yes or no decision
-    decision_form = request.form['decision']
-    if decision_form == "1" or decision_form == 1:
-        decision = True
-    else:
-        decision = False
+#     chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    
+#     suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
+
+#     #checking if match with this 2 users exists
+#     if (chooser_as_user2_match and suggested_as_user1_match):
+#         chooser_as_user2_match.user2_match = decision
+        
+#         try:
+#             # # add a date field here
+#             # chooser_as_user2_match.dateMatch = date.today.strftime('%d/%m/%Y')
+
+#             # # can also populate the datePref and dateIdea here
+#             # # call the two urls
+
+#             session.commit()
+#             return jsonify(
+#                 {
+#                     "code": 201,
+#                     "data": chooser_as_user2_match.json()
+#                 }
+#             ), 201
+
+#         except:
+#             return jsonify(
+#                 {
+#                     "code": 500,
+#                     "message": "An error occurred updating the match. Please try again."
+#                 }
+#             ), 500
+#     else:
+#         new_match = Match(
+#             user_id1 = user_chooser_id,
+#             user_id2 = user_suggested_id,
+#             user1_match = bool(decision)
+#         )
+#         try:
+#             session.add(new_match)
+#             session.commit()
+
+#             return jsonify(
+#                 {
+#                     "code": 201,
+#                     "data": new_match.json()
+#                 }
+#             ), 201
+
+#         except:
+#             return jsonify(
+#                 {
+#                     "code": 500,
+#                     "message": "An error occurred creating the match. Please try again."
+#                 }
+#             ), 500
+
+
+@app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/0", methods=['POST'])
+def create_match_reject(user_chooser_id,user_suggested_id):
 
     chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
     
@@ -209,7 +271,7 @@ def create_match():
 
     #checking if match with this 2 users exists
     if (chooser_as_user2_match and suggested_as_user1_match):
-        chooser_as_user2_match.user2_match = decision
+        chooser_as_user2_match.user2_match = 0
         
         try:
             # # add a date field here
@@ -219,7 +281,6 @@ def create_match():
             # # call the two urls
 
             session.commit()
-
             return jsonify(
                 {
                     "code": 201,
@@ -238,7 +299,7 @@ def create_match():
         new_match = Match(
             user_id1 = user_chooser_id,
             user_id2 = user_suggested_id,
-            user1_match = bool(decision)
+            user1_match = bool(False)
         )
         try:
             session.add(new_match)
@@ -258,6 +319,66 @@ def create_match():
                     "message": "An error occurred creating the match. Please try again."
                 }
             ), 500
+
+@app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/1", methods=['POST'])
+def create_match_accept(user_chooser_id,user_suggested_id):
+
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    
+    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
+
+    #checking if match with this 2 users exists
+    if (chooser_as_user2_match and suggested_as_user1_match):
+        chooser_as_user2_match.user2_match = 1
+        
+        try:
+            # # add a date field here
+            # chooser_as_user2_match.dateMatch = date.today.strftime('%d/%m/%Y')
+
+            # # can also populate the datePref and dateIdea here
+            # # call the two urls
+
+            session.commit()
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": chooser_as_user2_match.json()
+                }
+            ), 201
+
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred updating the match. Please try again."
+                }
+            ), 500
+    else:
+        new_match = Match(
+            user_id1 = user_chooser_id,
+            user_id2 = user_suggested_id,
+            user1_match = bool(True)
+        )
+        try:
+            session.add(new_match)
+            session.commit()
+
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": new_match.json()
+                }
+            ), 201
+
+        except:
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred creating the match. Please try again."
+                }
+            ), 500
+
+
 
 # DELETE MATCH - In event of banning
 @app.route("/match/<string:match_id>", methods=['DELETE'])

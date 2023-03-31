@@ -20,6 +20,9 @@ conn_params = {
 }
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'flirtify_esd_micro'
+app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
+app.config['SESSION_COOKIE_PATH'] = '/'
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
 db = SQLAlchemy(app)
 CORS(app)

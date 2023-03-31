@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from invokes import invoke_http
+import pika
 import requests
 import json
 import os, sys
@@ -9,6 +10,9 @@ import random
 import asyncio
 
 app = Flask(__name__, template_folder='../templates')
+app.config['SECRET_KEY'] = 'flirtify_esd_micro'
+app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
+app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
 
 # https://rapidapi.com/ajith/api/love-calculator/
@@ -24,27 +28,27 @@ CORS(app)
 
 #====================================================================
 #====================================================================
-# dearest kaydon, attached you shall find pull msg URL pls test n revert thank u. best regards, daryl
+
+def callback(ch, method, properties, body):
+    print(jsonify(body.decode('utf-8')))
+
 @app.route('/get_queue_msg', methods=['GET'])
 def get_queue_msg():
-    import pika
-    RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
-    port = 5672
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     channel = connection.channel()
+
     channel.queue_declare(queue='profiles', durable=True)
-    channel.queue_bind(exchange='profiles_direct', queue='profiles')
-    messages = []
 
-    def callback(ch, method, properties, body):
-        message = body.decode()
-        messages.append(message)
-
-    channel.basic_consume(queue='profiles', on_message_callback=callback, auto_ack=True)
-    channel.start_consuming()
-
-    return jsonify({'messages': messages})
-
+    method_frame, _, body = channel.basic_get(queue='profiles', auto_ack=True)
+    if method_frame:
+        data = json.loads(body)
+        return jsonify(data)
+    else:
+        return jsonify(
+            {
+                'error': 'No message found.'
+            }
+        ), 404
 
 @app.route("/get_queue/<string:user1id>/<int:num>", methods=['GET'])
 def get_queue(user1id, num):
@@ -56,7 +60,6 @@ async def get_queue_async(user1id, num):
     result = get_compatibility(user1id, num) #response object
     json_result = result.get_json() #json object
     try:
-        import pika
         RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
         port = 5672
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
@@ -68,7 +71,8 @@ async def get_queue_async(user1id, num):
         # Declare and bind Queue 
         channel.queue_declare(queue='profiles', durable=True)
         channel.queue_bind(exchange='profiles_direct', queue='profiles') 
-        channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(json_result), properties=pika.BasicProperties(delivery_mode = 2))
+        for current_json_result in json_result['data']:
+            channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(current_json_result), properties=pika.BasicProperties(delivery_mode = 2))
     except:
         return jsonify(
             { 
@@ -135,6 +139,8 @@ def get_compatibility(user1id, num):
                         }
                     )
                 else:
+                    res['data']['user1']['id'] = str(res['data']['user1']['id'])
+                    res['data']['user2']['id'] = str(res['data']['user2']['id'])
                     result["data"].append(res)
 
     except Exception as e:
@@ -266,5 +272,5 @@ if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) +
           " for getting compatibility...")
     loop = asyncio.get_event_loop()
-    loop.create_task(app.run(host="0.0.0.0", port=7000, debug=True))
+    loop.create_task(app.run(host="0.0.0.0", port=7100, debug=True))
     loop.run_forever()
