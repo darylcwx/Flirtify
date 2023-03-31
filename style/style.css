@@ -8,6 +8,7 @@
 
 body{
     background-color: #fcdcdc !important;
+    color: #1b227d !important;
 }
 
 .person{
@@ -60,32 +61,23 @@ body{
 }
 
 /* Matches Table */
-
-tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
 td{
     padding: 5px;
 }
 
 .matches-row{
-    margin: 10px 20px;
+    margin: 20px 30px;
+    padding-left: 15%;
+    padding-right: 15%;
 }
 
-/* table, th, td {
-    border: #c7c7c7 1px solid;
-    border-collapse: collapse;
+/* .matches-profile-name{
+    margin-left: 50px;
+    width: 60px;
 }
 
-tr {
-    width: 100%;
-}
-
-th, td {
-    padding: 15px;
-    margin: 20px;
-    text-align: left;
+.matches-message{
+    margin-right: 50px;
 } */
 
 .match-username{
@@ -108,4 +100,4 @@ th, td {
 #date-content{
     display: none;
     margin: 15px 0;
-}
+}  
