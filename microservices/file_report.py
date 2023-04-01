@@ -70,15 +70,23 @@ def add_report(userid, otherid, matchid):
     print('match_result:', match_result)  
 
     # check messages
-    categories = checkMsg(otherid, matchid)
-    if categories == False:
-        report_status = 'Check user message failed.'
-        categories = []
+    result = checkMsg(otherid, matchid)
+    if result == 'api failed to check messages':
         return jsonify(
             {
                 "code": 500,
                 "data": {
                     "status": 'Check user message failed. Please try again later.'
+                    }
+            }
+        )
+    
+    elif result == 'no profanities detected':
+        return jsonify(
+            {
+                "code": 200,
+                "data": {
+                    "status": 'User message did not include any profanities. Report not added.'
                     }
             }
         )
@@ -172,10 +180,10 @@ def checkMsg(otherid, matchid):
     print(output)
 
     if output['status'] != 'success':
-        return False
+        return 'api failed to check messages'
 
     if len(output['profanity']['matches']) == 0:
-        return False
+        return 'no profanities detected'
     
     categories = []
     for item in output['profanity']['matches']:
