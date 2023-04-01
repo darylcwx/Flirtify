@@ -81,7 +81,7 @@
       <!-- LOADING MATCH CARDS -->
       <div v-if="!this.matchName" class="card" aria-hidden="true">
         <img
-          src="../images/flirtify-placeholder.png"
+          src="{{ url_for('static', filename='flirtify-placeholder.png') }}"
           class="card-img-top d-flex justify-content-center placeholder-glow col-12 bg-light"
           alt="flirtify"
           style="object-fit: none;"
@@ -160,30 +160,33 @@
             <div class="container text-center mt-4">
               <!-- <div class="row justify-content-between"> -->
               <div class="d-grid gap-2 d-md-block">
-                <div class="col-5">
-                  <!-- BUTTON TRIGGERS THE NEXT CARD -->
-                  <input type="hidden" name="user_chooser_id" v-model="user_chooser_id">
-                  <input type="hidden" name="user_suggested_id" :value="suggested">
-
-                  <button @click="onSwipeReject" type="button" class="btn btn-lg btn-secondary" id="next-btn">
-                    Next
-                  </button>
-                  
-                </div>
-                <div class="col-5">
-                  <!-- <input type="hidden" name="user_chooser_id" v-model="user_chooser_id" value="{{ session['user_id'] }}">
-                  <input type="hidden" name="user_suggested_id" v-model="user_suggested_id" :value="suggested"> -->
-
-                  <button @click="onSwipeAccept"
-                    type="button"
-                    class="btn btn-lg btn-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target="#matchModal"
-                    id="like-btn"
-                  >
-                  <i class="fa-solid fa-heart"></i>
-                  </button>
-                  
+                <div class="row">
+                  <div class="col-5">
+                    <!-- BUTTON TRIGGERS THE NEXT CARD -->
+                    <input type="hidden" name="user_chooser_id" v-model="user_chooser_id">
+                    <input type="hidden" name="user_suggested_id" :value="suggested">
+  
+                    <button @click="onSwipeReject" type="button" class="btn btn-lg btn-secondary" id="next-btn">
+                      Next
+                    </button>
+                    
+                  </div>
+                  <div class="col-2"></div>
+                  <div class="col-5">
+                    <!-- <input type="hidden" name="user_chooser_id" v-model="user_chooser_id" value="{{ session['user_id'] }}">
+                    <input type="hidden" name="user_suggested_id" v-model="user_suggested_id" :value="suggested"> -->
+  
+                    <button @click="onSwipeAccept"
+                      type="button"
+                      class="btn btn-lg btn-danger"
+                      data-bs-toggle="modal"
+                      data-bs-target="#matchModal"
+                      id="like-btn"
+                    >
+                    <i class="fa-solid fa-heart"></i>
+                    </button>
+                    
+                  </div>
                 </div>
               </div>
             </div>
@@ -251,7 +254,7 @@
             compatScore: "",
             matchDetails: {
               'Gender':"",
-              'First Date': "",
+              'Desired First Date': "",
               'MBTI': "",
             }
           };
@@ -273,15 +276,17 @@
             )
             .then((response) => response.json())
             .then((data) => {
+              console.log(data)
               // Getting the compatibility score
               this.compatScore = data['data'][0]['data']['compatibility_result'];
 
-              firstDate = firstMatchData['desiredfirstdate'];
-              firstLetter = firstDate.charAt(0).toUpperCase();
-              firstDate = firstLetter + firstDate.slice(1);
-
               // Showing Matches Details
-              firstMatchData = data['data'][0]['data']['user2'];
+              var firstMatchData = data['data'][0]['data']['user2'];
+
+              var firstDate = firstMatchData['desiredfirstdate'];
+              var firstLetter = firstDate.charAt(0).toUpperCase();
+              var firstDate = firstLetter + firstDate.slice(1);
+
               this.suggested = firstMatchData['id'];
               this.matchName = firstMatchData['firstname'] + " " + firstMatchData['lastname'] + ',';
               this.matchAge = firstMatchData['age'];
@@ -302,7 +307,7 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/849811382203678721/2",
+              "http://localhost:7100/get_queue_async/849811382203678721/" + numberToRetrieve.toString(),
               {
                 mode: 'cors',
               }
