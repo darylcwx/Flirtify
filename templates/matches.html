@@ -112,8 +112,9 @@
             
                             <td>
                                 <!-- Button trigger modal -->
-                                <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                                    <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center"></i>
+                                <button type="button" class="btn btn-outline-danger me-2" data-bs-toggle="modal" data-bs-target="#exampleModal" @click="selectItem(item.dateIdea); selectName(item['info']['firstname']);">
+                                    <i class="fa-sharp fa-solid fa-ellipsis-vertical fa-2xl text-center">
+                                    </i>
                                 </button>
                                 
                                 <!-- Modal -->
@@ -122,7 +123,7 @@
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                                {{ item['info']['firstname'] }} 
+                                                {{ user }} 
                                                 <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
                                                     <i class="fa-solid fa-circle-exclamation"></i>
                                                 </a>
@@ -131,7 +132,8 @@
                                         </div>
                                         <div class="modal-body text-center">
                                             <p class="fw-semibold">First Date Idea</p>
-                                            <h3> {{ item.dateIdea[0] }}</h3>
+                                            <h3> {{ date[0] }}</h3>
+                                            
     
                                             <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
                                             <div v-if="typeof moreDates[item.matchId] == object">
@@ -147,11 +149,13 @@
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                             <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item)">More Date Ideas</button>
-                                            <!-- <button type="button" class="btn btn-primary">Report</button> -->
                                         </div>
                                     </div>
                                     </div>
                                 </div>
+
+                                <!-- END OF MODAL -->
+
                                 <!-- Tag match_id to each button -->
                                 <button type="button" class="btn btn-danger" @click="goMessage(item.matchId)">Message <i class="fa-regular fa-message"></i></button>
                                 <!-- <router-link :to="'http://localhost:5000/get_all_messages/{{ matchesInfo[item.user_id2]['matchId'] }}'">
@@ -195,6 +199,8 @@
                     matchesResult : [],
                     matchesInfo: {},
                     moreDates: {},
+                    date: '',
+                    user:''
                 }
             },
 
@@ -330,8 +336,15 @@
                     console.log("Go to message");
                     console.log('This is the match id: ' + matchId);
                     // window.location.href= "https://www.google.com.sg/"
-                    window.location.href = "http://127.0.0.1:5000//get_all_messages/" + matchId;
-                }
+                    window.location.href = "http://127.0.0.1:5000/get_all_messages/" + matchId;
+                },
+                selectItem(item) {
+                    this.date = item;
+                },
+                selectName(user) {
+                    this.user = user;
+                },
+                
 
             },
 
