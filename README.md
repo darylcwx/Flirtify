@@ -1,5 +1,7 @@
 # Flirtify
 
+![Flirtify Logo](https://github.com/darylcwx/Flirtify/blob/main/static/flirtify.png)
+
 Ports for localhost testing
 26257 - User
 7000 - Compatibility
