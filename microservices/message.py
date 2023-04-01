@@ -1,3 +1,4 @@
+import json
 from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
@@ -93,8 +94,12 @@ def index(match_id):
             all_match_messages.append(message_details)
 
     redirect_from = request.args.get('redirect_from')
+    
     if redirect_from:
-        return render_template('message.html', success="Message was successfully sent!", all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
+        content_from_send = request.args.get('content')
+        # decode the variable from the string
+        content_str = json.loads(content_from_send)
+        return render_template('message.html', content=content_str['message'], all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
     else:
         return render_template('message.html', all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
 
@@ -153,29 +158,22 @@ def send_message(user_id, match_id):
         session_db.add(new_message)
         session_db.commit()
 
-        return jsonify(
-            {
+        content = {
                 "code": 201,
                 "message": "Message successfully sent"
             }
-        ), 201
         
     except Exception as e:
         session_db.rollback()
         app.logger.error(f"Error committing session: {str(e)}")
-        return jsonify(
-            {
+        content = {
                 "code": 500,
                 "message": "There was an error sending your message. Please try again."
             }
-        ), 500
 
-        # return "There was an error sending your message. Please try again."
-
-    success_message = "Message was successfully sent!"
 
     # return render_template('message.html', success=success_message)
-    return redirect(url_for('index', match_id=match_id, redirect_from='send_message'))
+    return redirect(url_for('index', match_id=match_id, content=json.dumps(content), redirect_from='send_message'))
 
 @app.route('/add_table')
 def add_table():
