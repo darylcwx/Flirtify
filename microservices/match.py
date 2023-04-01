@@ -48,6 +48,18 @@ class Match(Base):
 
 session = Session()
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+@app.route('/matches')
+def matches():
+    return render_template('matches.html')
+
+@app.route('/chat')
+def chat():
+    return render_template('message.html')
+
 #add table
 @app.route('/add_table')
 def add_table():
@@ -534,9 +546,9 @@ def populate_dateIdea(match_id):
                 }
             ), 500
         
-@app.context_processor
-def inject_navbar():
-    return dict(navbar="navbar.html")
+# @app.context_processor
+# def inject_navbar():
+#     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
