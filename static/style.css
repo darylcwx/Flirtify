@@ -6,20 +6,33 @@
 
 }
 
+body{
+    background-color: #fcdcdc !important;
+    color: #1b227d !important;
+}
+
 .person{
     margin: auto;
     /* Changing the width will change the size of the card */
-    width: 35%;
-    margin-top: 10%;
+    width: 500px;
+    margin-top: 14px;
+    box-shadow: 10px 20px rgb(224, 224, 224);
+    margin-bottom: 50px;
+    border-radius: 10px;
  }   
 
 .person img{
-    padding: 25px;
-    /* width: 40% !important; */
-    /* height: 40% !important; */
+    padding: 15px;
+    margin: auto;
+    width: 500px;
+    height: 500px;
+    background-position: center center;
+    background-repeat: no-repeat;
     object-fit: cover;
     object-position: center;
-    align-items: center;
+    /* outline-offset: -15px;
+    outline-style: inset;
+    outline-color: rgb(220, 218, 218); */
 }
 
 .account-details{
@@ -31,13 +44,8 @@
     right: 20px;
 }
 
-#read-more{
-    color: #cd5864;
-}
-
-#more-content{
-    /* display: none; */
-    margin-bottom: 15px;
+.person form{
+    margin-bottom: 25px;
 }
 
 .login{
@@ -53,44 +61,43 @@
 }
 
 /* Matches Table */
-
-tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
 td{
     padding: 5px;
 }
 
-/* table, th, td {
-    border: #c7c7c7 1px solid;
-    border-collapse: collapse;
+.matches-row{
+    margin: 20px 30px;
+    padding-left: 15%;
+    padding-right: 15%;
 }
 
-tr {
-    width: 100%;
+/* .matches-profile-name{
+    margin-left: 50px;
+    width: 60px;
 }
 
-th, td {
-    padding: 15px;
-    margin: 20px;
-    text-align: left;
+.matches-message{
+    margin-right: 50px;
 } */
 
 .match-username{
     margin: auto;
 }
 
-.profile-pic{
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+.matches-profile-pic{
+    width: 95px;
+    height: 100px;
+    border-radius: 30%;
     border: rgb(222, 222, 222) 1px solid;
-    padding: 2px;
+    padding: 1px;
+    background-position: center center;
+    background-repeat: no-repeat;
+    object-fit: cover;
+    object-position: center;
 }
 
 /* Matches Modal */
 #date-content{
     display: none;
     margin: 15px 0;
-}
+}  

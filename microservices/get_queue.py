@@ -130,7 +130,7 @@ def get_compatibility(user1id, num):
             if user["id"] != user1["id"] and user["gender"] != user1["gender"] and user not in queued:
                 user2 = user
                 queued.append(user)
-                res = processGetCompatibility(user1, user2)
+                res = processCompatibility(user1, user2)
                 if res["code"] not in range(200,300):
                     return jsonify(
                         {
@@ -149,14 +149,14 @@ def get_compatibility(user1id, num):
         ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
         print(ex_str)
         result = { "code": "500", 
-                  "message": "compatibility.py internal error: " + ex_str
+                  "message": "get_queue.py internal error: " + ex_str
                   }
 
     return jsonify(result)
     #====================================================================
     #===================================================================
 
-def processGetCompatibility(user1, user2):
+def processCompatibility(user1, user2):
     name1 = user1["firstname"] + " " + user1["lastname"] 
     name2 = user2["firstname"]  + " " + user2["lastname"] 
     bd1 = user1["birthdate"]
@@ -205,7 +205,6 @@ def processGetCompatibility(user1, user2):
         result2 = int(dict["overall"])
     else:
         result2 = dict["message"]
-
     # placeholder hard code in case API not working
     result2 = 78
     # =================================================================================
@@ -229,8 +228,8 @@ def processGetCompatibility(user1, user2):
     response = requests.request("GET", url, headers=headers, params=querystring)
     # free api, but limited calls. can't use bc payment method issue, but by right the returned dict is hardcoded below
     print("API 3: " + response.text) 
-    dict = {"type": "ok","result": {"attraction": 62,"emotion": 66,"mental": 64,"endurability": 81,"lifePath": 50,"children": 66,"overall": 70}
-    }
+    dict = json.loads(response.text)
+    dict = {"type": "ok","result": {"attraction": 62,"emotion": 66,"mental": 64,"endurability": 81,"lifePath": 50,"children": 66,"overall": 70}}
     if "result" in dict:
         result3 = int(dict["result"]["overall"])
     else:
@@ -270,7 +269,7 @@ def processGetCompatibility(user1, user2):
 
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) +
-          " for getting compatibility...")
+          " for getting queue and compatibility...")
     loop = asyncio.get_event_loop()
     loop.create_task(app.run(host="0.0.0.0", port=7100, debug=True))
     loop.run_forever()
