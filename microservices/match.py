@@ -249,13 +249,11 @@ def find_matches_by_user_id(user_id):
 @app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/0", methods=['POST'])
 def create_match_reject(user_chooser_id,user_suggested_id):
 
-    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id, Match.user_id1 == user_suggested_id).first()
     
-    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
-
     #checking if match with this 2 users exists
-    if (chooser_as_user2_match and suggested_as_user1_match):
-        chooser_as_user2_match.user2_match = 0
+    if (chooser_as_user2_match):
+        chooser_as_user2_match.user2_match = False
         
         try:
             # # add a date field here
@@ -307,17 +305,18 @@ def create_match_reject(user_chooser_id,user_suggested_id):
 @app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/1", methods=['POST'])
 def create_match_accept(user_chooser_id,user_suggested_id):
 
-    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id, Match.user_id1 == user_suggested_id).first()
     
-    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
+    # suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
 
     #checking if match with this 2 users exists
-    if (chooser_as_user2_match and suggested_as_user1_match):
-        chooser_as_user2_match.user2_match = 1
+    if (chooser_as_user2_match):
+        chooser_as_user2_match.user2_match = True
         matchid = chooser_as_user2_match.match_id
 
         # only if both swiped right on each other then
-        if (chooser_as_user2_match.user2_match == True and suggested_as_user1_match.user1_match == chooser_as_user2_match.user2_match):
+        ifMatch = False
+        if (chooser_as_user2_match.user2_match == True and chooser_as_user2_match.user1_match == True):
             ifMatch = True
             chooser_as_user2_match.dateMatched = datetime.today() #.strftime('%Y/%m/%d')
 
@@ -328,10 +327,10 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             if ifMatch:                
  
                 try:
-                    requests.post("http://localhost:5002/populate_dateprefs/{}".format(matchid))
+                    requests.post("http://127.0.0.1:5002/populate_dateprefs/{}".format(matchid))
 
                     try:
-                        requests.post("http://localhost:5002/date_recommendation/{}".format(matchid))
+                        requests.post("http://127.0.0.1:5002/date_recommendation/{}".format(matchid))
 
                     except:
                         return jsonify(
@@ -351,8 +350,9 @@ def create_match_accept(user_chooser_id,user_suggested_id):
 
             return jsonify(
                 {
-                    "code": 201,
-                    "data": chooser_as_user2_match.json()
+                    "code":     201,
+                    "data":     chooser_as_user2_match.json(),
+                    "matched":  ifMatch
                 }
             ), 201
 
@@ -377,8 +377,9 @@ def create_match_accept(user_chooser_id,user_suggested_id):
 
             return jsonify(
                 {
-                    "code": 201,
-                    "data": new_match.json()
+                    "code":     201,
+                    "data":     new_match.json(),
+                    "matched":  False
                 }
             ), 201
 

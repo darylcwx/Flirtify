@@ -52,7 +52,7 @@ session_db = Session()
 @app.route('/get_all_messages/<match_id>')
 def index(match_id):
     # session storing of user id but this will be replaced by the session storage when user logs in
-    session['user_id'] = 849412270214119425
+    session['user_id'] = 849811382203678721
     logged_in_user = session['user_id']
 
     url = f"http://localhost:5002/match/{match_id}"
