@@ -9,9 +9,11 @@ from sqlalchemy.orm import relationship
 import requests
 import json
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
+app.config['SECRET_KEY'] = 'flirtify_esd_micro'
+app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
+app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
-app.secret_key = 'flirtify_esd_micro'
 
 # Configure the SQLAlchemy engine to use CockroachDB
 engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
