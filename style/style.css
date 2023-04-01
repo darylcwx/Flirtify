@@ -6,6 +6,11 @@
 
 }
 
+nav{
+    margin-left: 10rem;
+    margin-right: 10rem;
+}
+
 body{
     background-color: #fcdcdc !important;
     color: #1b227d !important;
