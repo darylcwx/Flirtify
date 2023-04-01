@@ -152,10 +152,25 @@ def send_message(user_id, match_id):
     try:
         session_db.add(new_message)
         session_db.commit()
+
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Message successfully sent"
+            }
+        ), 201
+        
     except Exception as e:
         session_db.rollback()
         app.logger.error(f"Error committing session: {str(e)}")
-        return "There was an error sending your message. Please try again."
+        return jsonify(
+            {
+                "code": 500,
+                "message": "There was an error sending your message. Please try again."
+            }
+        ), 500
+
+        # return "There was an error sending your message. Please try again."
 
     success_message = "Message was successfully sent!"
 
