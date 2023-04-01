@@ -121,7 +121,7 @@ def add_report(userid, otherid, matchid):
 
 
 def checkMsg(otherid, matchid):
-    messages = invoke_http(message_URL + matchid, method='DELETE', json=None) 
+    messages = invoke_http(message_URL + matchid, method='GET', json=None) 
     # messages = [ 
     #     {'id': 1,
     #      'match_id': 1,
