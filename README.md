@@ -1,13 +1,14 @@
 # Flirtify
 
+![Flirtify Logo](https://github.com/darylcwx/Flirtify/blob/main/static/flirtify.png)
+
 Ports for localhost testing
 26257 - User
-7000 - Compatibility
+7100 - Compatibility
 
 
 DIRECTORY:
 
--   templates -> for all the html files
+1. templates -> for all the html files
     -   template.html -> use this template as base codes for every html file
--   style -> style.css -> put all the css styling in here
-    -> @media and screen is for page responsiveness
+2. static -> style.css -> put all the css styling in here

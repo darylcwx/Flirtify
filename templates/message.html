@@ -7,10 +7,10 @@
         <title>Flirtify Home</title>
     
         <!-- FAVICON -->
-        <link rel="icon" type="image/x-icon" href="../images/flirtify-favicon.png">
+        <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='flirtify-favicon.png')}}">
     
         <!-- CSS Style -->
-        <link rel = 'stylesheet' href = '../style/style.css'>
+        <link rel = 'stylesheet' href = '{{url_for('static', filename='style.css')}}'>
     
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
@@ -60,7 +60,7 @@
 
             .yours .message {
                 margin-right: 25%;
-                background-color: #eee;
+                background-color: #fcdcdc;
                 position: relative;
             }
 
@@ -83,7 +83,7 @@
                 left: -10px;
                 width: 10px;
                 height: 20px;
-                background: white;
+                background: #fcdcdc;
                 border-bottom-right-radius: 10px;
             }
 
@@ -120,7 +120,7 @@
                 right: -10px;
                 width: 10px;
                 height: 20px;
-                background: white;
+                background: #fcdcdc;
                 border-bottom-left-radius: 10px;
             }
 
@@ -138,17 +138,16 @@
     
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="home.html">
-                <img src="https://github.com/darylcwx/Flirtify/blob/main/images/flirtify-logo.png?raw=true" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
-                <span class="fs-4">Flirtify</span>
+            <a class="navbar-brand" href="http://127.0.0.1:26257/home">
+                <img src="{{ url_for('static', filename='flirtify-logo.png') }}" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
               </a>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="home.html">Home</a>
+                <a class="nav-link" aria-current="page" href="http://127.0.0.1:26257/home">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="matches.html">Matches</a>
+                <a class="nav-link" href="http://127.0.0.1:26257/matches">Matches</a>
               </li>
               <li class="nav-item dropdown account-details" style="position: absolute !important; right: 50px;">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -171,6 +170,8 @@
         <div class="col-3"></div>
         <div id="all-messages" class="col-6">
             <div class="text-center fs-3" style="color: #e00747; position: sticky;">
+                <img class="matches-profile-pic" src="{{url_for('static', filename='stock-image.jpg')}}" alt="Profile Picture" style="width: 100px; height: 100px;"> 
+                <br>
                 {{ receiving_user_name }}
             </div>
             {% if all_messages %}

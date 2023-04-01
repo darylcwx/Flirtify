@@ -31,17 +31,17 @@
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="home.html">
+            <a class="navbar-brand" href="{{ url_for('home') }}"">
                 <img src="https://github.com/darylcwx/Flirtify/blob/main/static/flirtify-logo.png?raw=true" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
                 <!-- <span class="fs-4">Flirtify</span> -->
               </a>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
               <li class="nav-item">
-                <a class="nav-link" aria-current="page" href="home.html">Home</a>
+                <a class="nav-link" aria-current="page" href="{{ url_for('home') }}">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="matches.html">Matches</a>
+                <a class="nav-link active" href="{{ url_for('matches') }}">Matches</a>
               </li>
               <li class="nav-item dropdown account-details" style="position: absolute !important; right: 50px;">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -102,13 +102,13 @@
                             <!-- ITEM IS THE VALUE in matchesInfo, idx is the key -->
 
                             <td class="d-flex justify-content-center matches-profile-name">
-                                <img class="matches-profile-pic" src="../static/stock-image.jpg" alt="Profile Picture"> 
-                                <span class="fw-semibold match-username mx-5">{{ item["info"]['firstname'] }}</span>
+                                <img class="matches-profile-pic" src="{{url_for('static', filename='stock-image.jpg')}}" alt="Profile Picture"> 
+                                <span class="fw-semibold match-username mx-5">[[ item["info"]['firstname'] ]]</span>
                             </td>
                             
-                            <td> {{item["daysMatched"]}} </td>
-                            <td class="text-uppercase"> {{item['info']['mbti']}} </td>
-                            <td>{{item['info']['age']}}</td>
+                            <td> [[ item["daysMatched"] ]] </td>
+                            <td class="text-uppercase"> [[ item['info']['mbti'] ]] </td>
+                            <td>[[ item['info']['age'] ]]</td>
             
                             <td>
                                 <!-- Button trigger modal -->
@@ -123,32 +123,35 @@
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                                {{ user }} 
+                                                [[  user  ]] 
+
+                                                <!-- Report User Button -->
                                                 <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
-                                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                                    <i class="fa-solid fa-circle-exclamation ms-1"></i>
                                                 </a>
                                             </h1>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body text-center">
                                             <p class="fw-semibold">First Date Idea</p>
-                                            <h3> {{ date[0] }}</h3>
-                                            
+                                            <h3> [[ date[0] ]]</h3>
     
                                             <!-- Displaying more dates in hidden content. Press Date Ideas Button to turn more dates content to block item -->
-                                            <div v-if="typeof moreDates[item.matchId] == object">
-                                                <p class="fw-bold my-3">More Date Ideas</p>
-                                                <ul class="list-group" v-for="ideas in moreDates[item.matchId]">
-                                                    <li class="list-group-item"> {{ ideas }} </li>
-                                                </ul>
-                                            </div>
-                                            <div v-else>
-                                                <p>{{ moreDates[item.matchId] }}</p>
+                                            <div v-if="showMoreDates">
+                                                <div v-if="date.length > 1">
+                                                    <p class="fw-bold my-3">More Date Ideas</p>
+                                                    <ul class="list-group" v-for="ideas in date">
+                                                        <li class="list-group-item"> [[ ideas ]] </li>
+                                                    </ul>
+                                                </div>
+                                                <div v-else>
+                                                    <p> Talk to your match to get more date ideas! </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                            <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates(item)">More Date Ideas</button>
+                                            <button type="button" class="btn btn-danger ms-2" @click="generateMoreDates">More Date Ideas</button>
                                         </div>
                                     </div>
                                     </div>
@@ -158,9 +161,6 @@
 
                                 <!-- Tag match_id to each button -->
                                 <button type="button" class="btn btn-danger" @click="goMessage(item.matchId)">Message <i class="fa-regular fa-message"></i></button>
-                                <!-- <router-link :to="'http://localhost:5000/get_all_messages/{{ matchesInfo[item.user_id2]['matchId'] }}'">
-                                    <button type="button" class="btn btn-danger">Message <i class="fa-regular fa-message"></i></button>
-                                </router-link>  -->
                             </td>
                         </tr>
                         </tbody>
@@ -171,7 +171,7 @@
             <!-- IF NO MATCHES -->
             <div class="text-center mt-5" v-else>
                 <h1 class="display-5">You have no matches <b>YET</b>!</h1>
-                <form action="../templates/home.html">
+                <form action="{{url_for('home')}}">
                     <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
                 </form>
             </div>
@@ -189,6 +189,7 @@
 
     const app = Vue.createApp(
         {
+            delimiters: ['[[', ']]'], // Change the delimiter to [[ ]]
             data(){
 
                 // matchesResult is the array that will be used to display the matches using match microservice
@@ -198,9 +199,9 @@
                 return {
                     matchesResult : [],
                     matchesInfo: {},
-                    moreDates: {},
+                    showMoreDates: false,
                     date: '',
-                    user:''
+                    user:'',
                 }
             },
 
@@ -320,15 +321,17 @@
                     });
                 },
 
-                generateMoreDates(info){
+                generateMoreDates(date, name){
                     console.log("Generate more dates");
-                    dateIdeas = info['dateIdea'];
-                    matchUserId = info['matchId'];
-                    if (dateIdeas.length > 1){
-                        // Generate more dates
-                        this.moreDates[matchUserId] = dateIdeas.slice(1);
-                    } else{
-                        this.moreDates[matchUserId] = "Talk to your match to get more date ideas!";
+                    this.showMoreDates = true;
+                },
+
+                hideDates(){
+                    document.onclick = function(e){
+                        console.log(e.target.id)
+                        if(e.target.id == ''){
+                            this.showMoreDates = false;
+                        }
                     }
                 },
 
@@ -341,6 +344,7 @@
                 selectItem(item) {
                     this.date = item;
                 },
+                
                 selectName(user) {
                     this.user = user;
                 },
@@ -351,8 +355,8 @@
             mounted() {
                 this.getMatches();
                 this.getUserInfo();
-                this.generateMoreDates();
-                this.goMessage();
+                // this.generateMoreDates();
+                // this.goMessage();
             },
 
             computed : {
@@ -362,10 +366,6 @@
     );
 
     app.mount("#app"); 
-
-    $(function () {
-        $('[data-toggle="popover"]').popover()
-    })
 
 </script>
     
