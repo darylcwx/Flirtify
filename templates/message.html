@@ -7,7 +7,7 @@
         <title>Flirtify Home</title>
     
         <!-- FAVICON -->
-        <link rel="icon" type="image/x-icon" href="../images/flirtify-favicon.png">
+        <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='flirtify-favicon.png')}}">
     
         <!-- CSS Style -->
         <link rel = 'stylesheet' href = '{{url_for('static', filename='style.css')}}'>
@@ -60,7 +60,7 @@
 
             .yours .message {
                 margin-right: 25%;
-                background-color: #eee;
+                background-color: #fcdcdc;
                 position: relative;
             }
 
@@ -83,7 +83,7 @@
                 left: -10px;
                 width: 10px;
                 height: 20px;
-                background: white;
+                background: #fcdcdc;
                 border-bottom-right-radius: 10px;
             }
 
@@ -120,7 +120,7 @@
                 right: -10px;
                 width: 10px;
                 height: 20px;
-                background: white;
+                background: #fcdcdc;
                 border-bottom-left-radius: 10px;
             }
 
@@ -140,7 +140,6 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="http://127.0.0.1:26257/home">
                 <img src="{{ url_for('static', filename='flirtify-logo.png') }}" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
-                <span class="fs-4">Flirtify</span>
               </a>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
