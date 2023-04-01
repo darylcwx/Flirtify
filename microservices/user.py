@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from itsdangerous import exc
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 

@@ -27,7 +27,7 @@ cur.execute("SET DATABASE = flirtify")
 # Commit the transaction
 #conn.commit()
 
-matches = cur.execute("SELECT * FROM public.match").fetchall()
+matches = cur.execute("SELECT * FROM public.report").fetchall()
 
 for match in matches:
     print(match)
