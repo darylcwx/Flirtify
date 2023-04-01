@@ -11,6 +11,11 @@ body{
     color: #1b227d !important;
 }
 
+nav{
+    margin-left: 10rem;
+    margin-right: 10rem;
+}
+
 .person{
     margin: auto;
     /* Changing the width will change the size of the card */
