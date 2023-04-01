@@ -53,11 +53,18 @@ class User(db.Model):
         return result
         
 
-@app.route('/')
-def index():
-    
-    # return "Hello, World!"
+# @app.route('/')
+@app.route('/home')
+def home():
     return render_template('home.html')
+
+@app.route('/matches')
+def matches():
+    return render_template('matches.html')
+
+@app.route('/chat')
+def chat():
+    return render_template('message.html')
 
 session = Session()
 
@@ -258,9 +265,9 @@ def update_user(userid):
             }
         ), 500
 
-@app.context_processor
-def inject_navbar():
-    return dict(navbar="navbar.html")
+# @app.context_processor
+# def inject_navbar():
+#     return dict(navbar="navbar.html")
             
 
 if __name__ == '__main__':

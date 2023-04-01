@@ -38,25 +38,22 @@
 
     <!-- AXIOS -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-    <!-- SOCKET.IO -->
-    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
     
   </head>
 
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="home.html">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
             <img src="{{ url_for('static', filename='flirtify-logo.png') }}" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
             <!-- <span class="fs-4">Flirtify</span> -->
           </a>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="home.html">Home</a>
+            <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="matches.html">Matches</a>
+            <a class="nav-link" href="{{ url_for('matches') }}">Matches</a>
           </li>
           <li class="nav-item dropdown account-details" style="position: absolute !important; right: 50px;">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -73,7 +70,7 @@
 </nav>
 
   <body id="app" data-user-chooser-id="{{ session['user_id'] }}">
-    <h1 class="display-6 text-center my-3">Welcome back, user! <br> 
+    <h1 class="display-6 text-center my-3">Welcome back, [[ this.user_chooser_name ]]! <br> 
       <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
     </h1>
     <!-- MATCH CARD -->
@@ -114,7 +111,7 @@
       <!-- LOADED MATCH CARDS -->
       <div v-else class="card">
         <img
-          src="{{ url_for('static', filename='flirtify.png') }}"
+          src="{{ url_for('static', filename='stock-image.jpg') }}"
           class="card-img-top d-flex justify-content-center center-cropped"
           alt="flirtify"
         />
@@ -122,7 +119,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col text-start">
-                <h5 class="card-title align-middle mt-2"> [[ matchName ]] [[ matchAge ]]</h5>
+                <h5 class="card-title align-middle mt-2 text-capitalize"> [[ matchName ]] [[ matchAge ]]</h5>
               </div>
               <div class="col-3">
                 <!-- <div class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
@@ -226,7 +223,7 @@
                   >
                     Close
                   </button>
-                  <button type="button" class="btn btn-danger">Chat Now</button>
+                  <button type="button" class="btn btn-danger" href="#">Chat Now</button>
                 </div>
               </div>
             </div>
@@ -237,7 +234,7 @@
 
     <script>
       // For Testing
-      var userId = 849811382189850625;
+      // var userId = 849811382203678721;
 
       // Querying the microservices
       const app = Vue.createApp({
@@ -247,7 +244,7 @@
             matchContent: false,
             suggested: "",
             user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
-            matchesQueue: [],
+            user_chooser_name: '',
             matchName : "",
             matchAge: "",
             matchPreferences: [],
@@ -261,15 +258,36 @@
         },
 
         created(){
-          this.loadFirstMatch(userId);
-          this.loadMatchQueue(userId, 4);
+          this.getSessionUserInfo();
+          this.loadFirstMatch(this.user_chooser_id);
+          this.loadMatchQueue(this.user_chooser_id, 4);
         },
 
         methods: {
+
+          // Getting session user's name
+          getSessionUserInfo(){
+            fetch(
+              "http://localhost:26257/user/" + this.user_chooser_id,
+                  {
+                      mode: 'cors',
+                  }
+            )
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data)
+              this.user_chooser_name = data['data']['firstname'];
+              console.log('this is the user_chooser_name', this.user_chooser_name)
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+            });
+          },
+
           loadFirstMatch(userId){
             fetch(
               // "http://localhost:7100/get_queue/" +user_id "/1"
-              "http://localhost:7100/get_queue/849811382203678721/1",
+              "http://localhost:7100/get_queue/" + this.user_chooser_id +"/1",
                   {
                       mode: 'cors',
                   }
@@ -307,7 +325,7 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/849811382203678721/" + numberToRetrieve.toString(),
+              "http://localhost:7100/get_queue_async/" +this.user_chooser_id + "/" + numberToRetrieve.toString(),
               {
                 mode: 'cors',
               }
@@ -365,6 +383,9 @@
 
           // function that retrieves another compatability result after a reject swipe
           onSwipeReject(){
+            console.log(this.user_chooser_id);
+            console.log(this.suggested);
+
             fetch("http://localhost:5002/create_match/"+this.user_chooser_id+"/"+this.suggested+"/"+0,
                   {
                       method: "POST",
@@ -380,6 +401,7 @@
                 .then(data => {
                   console.log(data);
                   this.loadMatchQueueMsg()
+                  // this.matchName = '';
                   console.log('swiped but rejected');
                   this.loadMatchQueue(userId, 1);
                 })
@@ -415,7 +437,13 @@
                   // Handle error response
                 });
 
+            },
+
+            // function that pops the modal if the match is true
+            messageMatch(){
+
             }
+
         },
 
         mounted() {

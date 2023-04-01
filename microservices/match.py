@@ -48,6 +48,18 @@ class Match(Base):
 
 session = Session()
 
+@app.route('/home')
+def home():
+    return render_template('home.html')
+
+@app.route('/matches')
+def matches():
+    return render_template('matches.html')
+
+@app.route('/chat')
+def chat():
+    return render_template('message.html')
+
 #add table
 @app.route('/add_table')
 def add_table():
@@ -291,10 +303,10 @@ def create_match_reject(user_chooser_id,user_suggested_id):
 
             return jsonify(
                 {
-                    "code": 201,
+                    "code": 200,
                     "data": new_match.json()
                 }
-            ), 201
+            ), 200
 
         except:
             return jsonify(
@@ -336,25 +348,25 @@ def create_match_accept(user_chooser_id,user_suggested_id):
                     except:
                         return jsonify(
                             {
-                                "code": 500,
+                                "code": 502,
                                 "message": "An error occurred populating the date recommendation. Please try again."
                             }
-                        ), 500
+                        ), 502
 
                 except:
                     return jsonify(
                         {
-                            "code": 500,
+                            "code": 501,
                             "message": "An error occurred creating the date preference. Please try again."
                         }
-                    ), 500
+                    ), 501
 
             return jsonify(
                 {
-                    "code": 201,
+                    "code": 200,
                     "data": chooser_as_user2_match.json()
                 }
-            ), 201
+            ), 200
 
 
         except:
@@ -385,10 +397,10 @@ def create_match_accept(user_chooser_id,user_suggested_id):
         except:
             return jsonify(
                 {
-                    "code": 500,
+                    "code": 503,
                     "message": "An error occurred creating the match. Please try again."
                 }
-            ), 500
+            ), 503
 
 
 
@@ -417,21 +429,6 @@ def delete_match(match_id):
             "message": "Match not found."
         }
     ), 404
-
-# check if match match
-@app.route('/check_match', methods=['POST'])
-def check_match():
-    data = request.get_json()
-    # Extract the attributes from the request JSON data
-    user1_match = data['user1_match']
-    user2_match = data['user2_match']
-    # Check if the attributes are equal
-    if user1_match == user2_match:
-        result = True
-    else:
-        result = False
-    # Return the result as a JSON response
-    return jsonify({'result': result})
 
 
 # new -- populate datePrefs
@@ -534,9 +531,9 @@ def populate_dateIdea(match_id):
                 }
             ), 500
         
-@app.context_processor
-def inject_navbar():
-    return dict(navbar="navbar.html")
+# @app.context_processor
+# def inject_navbar():
+#     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
     app.run(port=5002, debug=True)
