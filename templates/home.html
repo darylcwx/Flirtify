@@ -70,7 +70,7 @@
 </nav>
 
   <body id="app" data-user-chooser-id="{{ session['user_id'] }}">
-    <h1 class="display-6 text-center my-3">Welcome back, user! {{session['user_id']}}<br> 
+    <h1 class="display-6 text-center my-3">Welcome back, [[ this.user_chooser_name ]]! <br> 
       <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
     </h1>
     <!-- MATCH CARD -->
@@ -119,7 +119,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col text-start">
-                <h5 class="card-title align-middle mt-2"> [[ matchName ]] [[ matchAge ]]</h5>
+                <h5 class="card-title align-middle mt-2 text-capitalize"> [[ matchName ]] [[ matchAge ]]</h5>
               </div>
               <div class="col-3">
                 <!-- <div class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
@@ -234,7 +234,7 @@
 
     <script>
       // For Testing
-      var userId = 849811382203678721;
+      // var userId = 849811382203678721;
 
       // Querying the microservices
       const app = Vue.createApp({
@@ -244,7 +244,7 @@
             matchContent: false,
             suggested: "",
             user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
-            matchesQueue: [],
+            user_chooser_name: '',
             matchName : "",
             matchAge: "",
             matchPreferences: [],
@@ -258,15 +258,36 @@
         },
 
         created(){
-          this.loadFirstMatch(userId);
-          this.loadMatchQueue(userId, 4);
+          this.getSessionUserInfo();
+          this.loadFirstMatch(this.user_chooser_id);
+          this.loadMatchQueue(this.user_chooser_id, 4);
         },
 
         methods: {
+
+          // Getting session user's name
+          getSessionUserInfo(){
+            fetch(
+              "http://localhost:26257/user/" + this.user_chooser_id,
+                  {
+                      mode: 'cors',
+                  }
+            )
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data)
+              this.user_chooser_name = data['data']['firstname'];
+              console.log('this is the user_chooser_name', this.user_chooser_name)
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+            });
+          },
+
           loadFirstMatch(userId){
             fetch(
               // "http://localhost:7100/get_queue/" +user_id "/1"
-              "http://localhost:7100/get_queue/849811382203678721/1",
+              "http://localhost:7100/get_queue/" + this.user_chooser_id +"/1",
                   {
                       mode: 'cors',
                   }
@@ -304,7 +325,7 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/849811382203678721/" + numberToRetrieve.toString(),
+              "http://localhost:7100/get_queue_async/" +this.user_chooser_id + "/" + numberToRetrieve.toString(),
               {
                 mode: 'cors',
               }
@@ -380,6 +401,7 @@
                 .then(data => {
                   console.log(data);
                   this.loadMatchQueueMsg()
+                  // this.matchName = '';
                   console.log('swiped but rejected');
                   this.loadMatchQueue(userId, 1);
                 })
@@ -415,7 +437,13 @@
                   // Handle error response
                 });
 
+            },
+
+            // function that pops the modal if the match is true
+            messageMatch(){
+
             }
+
         },
 
         mounted() {
