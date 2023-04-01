@@ -431,6 +431,30 @@ def delete_match(match_id):
     ), 404
 
 
+@app.route("/match/ban/<string:user_id>", methods=['DELETE'])
+def delete_all_matches(user_id):
+    m1 = session.query(Match).filter(Match.user_id1 == user_id)
+    m2 = session.query(Match).filter(Match.user_id2 == user_id)
+    matches = m1.union(m2).all()
+
+    if matches:
+        for match in matches:
+            session.delete(match)
+        session.commit()
+        return jsonify(
+            {
+                "code": 200,
+                "message": "Deleted all matches related to user_id: {}".format(user_id)
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "Matches not found for user_id: {}".format(user_id)
+        }
+    ), 404
+
+
 # new -- populate datePrefs
 @app.route('/populate_dateprefs/<int:match_id>', methods=['POST'])
 def populate_datepref(match_id):
