@@ -1,0 +1,8 @@
+docker build -t jeremygmc/user:1.0 -f user.Dockerfile ./
+
+docker build -t jeremygmc/compat:1.0 -f compat.Dockerfile ./
+
+docker run -d --network=flirtify --name=user -p 8000:26257 -p 8080:8080 -e COCKROACHDB_URL=postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full jeremygmc/user:1.0
+
+docker run -d --network=flirtify --name=compat -p 8001:7100 -e COCKROACHDB_URL=postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full jeremygmc/compat:1.0
+
