@@ -92,7 +92,7 @@ def add_report(userid, otherid, matchid):
         )
 
     # add report into database
-    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category) VALUES (%s, %s, %s)", (userid, otherid, categories,))
+    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, matchid) VALUES (%s, %s, %s)", (userid, otherid, matchid))
     reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
 
     if len(reps) >= 5:
