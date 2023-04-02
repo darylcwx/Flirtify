@@ -9,7 +9,7 @@ from datetime import datetime
 import random
 import asyncio
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SECRET_KEY'] = 'flirtify_esd_micro'
 app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
 app.config['SESSION_COOKIE_PATH'] = '/'

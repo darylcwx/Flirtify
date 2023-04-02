@@ -19,8 +19,11 @@ conn_params = {
     'password':"GvtUwDUhQOYrlDC7jEbblg",
 }
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SQLALCHEMY_DATABASE_URI'] = conn_string
+app.config['SECRET_KEY'] = 'flirtify_esd_micro'
+app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
+app.config['SESSION_COOKIE_PATH'] = '/'
 db = SQLAlchemy(app)
 CORS(app)
 
@@ -40,6 +43,7 @@ class Report(db.Model):
     def __init__(self, userid, otherid, matchid):
         self.userid = userid
         self.otherid = otherid
+        self.matchid = matchid
 
 def get_conn():
     conn = psycopg.connect(**conn_params, autocommit=True)
@@ -92,7 +96,7 @@ def add_report(userid, otherid, matchid):
         )
 
     # add report into database
-    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, category) VALUES (%s, %s, %s)", (userid, otherid, categories,))
+    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, matchid) VALUES (%s, %s, %s)", (userid, otherid, matchid))
     reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
 
     if len(reps) >= 5:
