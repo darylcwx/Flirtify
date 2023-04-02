@@ -43,6 +43,7 @@ class Report(db.Model):
     def __init__(self, userid, otherid, matchid):
         self.userid = userid
         self.otherid = otherid
+        self.matchid = matchid
 
 def get_conn():
     conn = psycopg.connect(**conn_params, autocommit=True)
