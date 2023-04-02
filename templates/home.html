@@ -70,7 +70,7 @@
 </nav>
 
   <body id="app" data-user-chooser-id="{{ session['user_id'] }}">
-    <h1 class="display-6 text-center my-3">Welcome back, user! {{session['user_id']}}<br> 
+    <h1 class="display-6 text-center my-3">Welcome back, [[ this.user_chooser_name ]]! <br> 
       <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
     </h1>
     <!-- MATCH CARD -->
@@ -119,7 +119,7 @@
           <div class="container">
             <div class="row justify-content-between">
               <div class="col text-start">
-                <h5 class="card-title align-middle mt-2"> [[ matchName ]] [[ matchAge ]]</h5>
+                <h5 class="card-title align-middle mt-2 text-capitalize"> [[ matchName ]] [[ matchAge ]]</h5>
               </div>
               <div class="col-3">
                 <!-- <div class="p-2 border border-danger border-3 rounded-pill rounded-5 text-danger text-center score">
@@ -127,7 +127,7 @@
                       {{ compatScore }}
                   </a>
                 </div> -->
-                <button type="button" class="btn btn-outline-danger" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Top popover">
+                <button type="button" class="btn btn-outline-danger" style="cursor: default;">
                     [[ compatScore ]]
                 </button>
               </div>
@@ -173,11 +173,11 @@
                     <!-- <input type="hidden" name="user_chooser_id" v-model="user_chooser_id" value="{{ session['user_id'] }}">
                     <input type="hidden" name="user_suggested_id" v-model="user_suggested_id" :value="suggested"> -->
   
-                    <button @click="onSwipeAccept"
+                    <button @click="onSwipeAccept(); messageMatch();"
                       type="button"
                       class="btn btn-lg btn-danger"
                       data-bs-toggle="modal"
-                      data-bs-target="#matchModal"
+                      data-bs-target="#matchingModal"
                       id="like-btn"
                     >
                     <i class="fa-solid fa-heart"></i>
@@ -190,9 +190,10 @@
           </form>
 
           <!-- IF MATCH -->
-          <div
+          <div v-if="showMatchModal">
+            <div
             class="modal fade"
-            id="matchModal"
+            id="matchingModal"
             tabindex="-1"
             aria-labelledby="matchModalLabel"
             aria-hidden="true"
@@ -208,25 +209,30 @@
                     class="btn-close"
                     data-bs-dismiss="modal"
                     aria-label="Close"
+                    @click="this.showMatchModal = false"
                   ></button>
                 </div>
                 <div class="modal-body">
                   <!-- DISPLAY MATCH PICTURE HERE -->
                   <!-- <img src="" alt=""> -->
-                  <p class="text-center fw-bold">IT'S A MATCH!</p>
+                  <p class="text-center fs-4 fw-bold">IT'S A MATCH!</p>
+                  <br>
+                  <p class="text-center">You have matched with [[ matchName ]]!</p>
                 </div>
                 <div class="modal-footer">
                   <button
                     type="button"
                     class="btn btn-secondary"
                     data-bs-dismiss="modal"
+                    @click="this.showMatchModal = false"
                   >
                     Close
                   </button>
-                  <button type="button" class="btn btn-danger" href="#">Chat Now</button>
+                  <button type="button" class="btn btn-danger" @click="goChat">Chat Now</button>
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>
@@ -234,7 +240,7 @@
 
     <script>
       // For Testing
-      var userId = 849811382203678721;
+      // var userId = 849811382203678721;
 
       // Querying the microservices
       const app = Vue.createApp({
@@ -244,7 +250,7 @@
             matchContent: false,
             suggested: "",
             user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
-            matchesQueue: [],
+            user_chooser_name: '',
             matchName : "",
             matchAge: "",
             matchPreferences: [],
@@ -253,20 +259,43 @@
               'Gender':"",
               'Desired First Date': "",
               'MBTI': "",
-            }
+            },
+            showMatchModal: false,
+            chatLink: "",
           };
         },
 
         created(){
-          this.loadFirstMatch(userId);
-          this.loadMatchQueue(userId, 4);
+          this.getSessionUserInfo();
+          this.loadFirstMatch(this.user_chooser_id);
+          this.loadMatchQueue(this.user_chooser_id, 4);
         },
 
         methods: {
+
+          // Getting session user's name
+          getSessionUserInfo(){
+            fetch(
+              "http://localhost:26257/user/" + this.user_chooser_id,
+                  {
+                      mode: 'cors',
+                  }
+            )
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data)
+              this.user_chooser_name = data['data']['firstname'];
+              console.log('this is the user_chooser_name', this.user_chooser_name)
+            })
+            .catch((error) => {
+              console.error('Error:', error);
+            });
+          },
+
           loadFirstMatch(userId){
             fetch(
               // "http://localhost:7100/get_queue/" +user_id "/1"
-              "http://localhost:7100/get_queue/849811382203678721/1",
+              "http://localhost:7100/get_queue/" + this.user_chooser_id +"/1",
                   {
                       mode: 'cors',
                   }
@@ -304,7 +333,7 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/849811382203678721/" + numberToRetrieve.toString(),
+              "http://localhost:7100/get_queue_async/" +this.user_chooser_id + "/" + numberToRetrieve.toString(),
               {
                 mode: 'cors',
               }
@@ -380,6 +409,7 @@
                 .then(data => {
                   console.log(data);
                   this.loadMatchQueueMsg()
+                  // this.matchName = '';
                   console.log('swiped but rejected');
                   this.loadMatchQueue(userId, 1);
                 })
@@ -415,7 +445,47 @@
                   // Handle error response
                 });
 
-            }
+            },
+
+            // function that pops the modal if the match is true
+            messageMatch(){
+              console.log('==============================');
+              console.log('Checking if match is true true');
+
+              fetch(
+              "http://localhost:5002/match/user/" + this.user_chooser_id,
+                {
+                    mode: 'cors',
+                })
+              .then((response) => response.json())
+              .then((data) => {
+                console.log(data)
+
+                // iterate through the data to find each match object
+                for (var i = 0; i < data['data'].length; i++){
+                  // Checking if user_id1 or user_id2 is the current user
+                  if (data['data'][i]['user1_id'] == this.user_chooser_id){
+                    // Checking if suggested user = user2_id user1_match and user2_match are both true
+                    if (this.suggested == data['data'][i]['user2_id'] && data['data'][i]['user2_match'] == true && data['data'][i]['user1_match'] == true){
+                      this.showMatchModal = true;
+                      this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data'][i]['match_id'];
+                    }
+                  } else {
+                    if (this.suggested == data['data'][i]['user1_id'] && data['data'][i]['user1_match'] == true && data['data'][i]['user2_match'] == true){
+                      this.showMatchModal = true;
+                      this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data'][i]['match_id'];
+                    }
+                  }
+                }
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+              });
+              },
+
+              goChat(){
+                window.location.href = this.chatLink;
+              }
         },
 
         mounted() {

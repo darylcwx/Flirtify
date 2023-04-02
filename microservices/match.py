@@ -13,7 +13,7 @@ import requests
 import json
 from datetime import datetime
 
-app = Flask(__name__, template_folder='../templates')
+app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SECRET_KEY'] = 'flirtify_esd_micro'
 app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
 app.config['SESSION_COOKIE_PATH'] = '/'
@@ -261,13 +261,11 @@ def find_matches_by_user_id(user_id):
 @app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/0", methods=['POST'])
 def create_match_reject(user_chooser_id,user_suggested_id):
 
-    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id, Match.user_id1 == user_suggested_id).first()
     
-    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
-
     #checking if match with this 2 users exists
-    if (chooser_as_user2_match and suggested_as_user1_match):
-        chooser_as_user2_match.user2_match = 0
+    if (chooser_as_user2_match):
+        chooser_as_user2_match.user2_match = False
         
         try:
             # # add a date field here
@@ -303,10 +301,10 @@ def create_match_reject(user_chooser_id,user_suggested_id):
 
             return jsonify(
                 {
-                    "code": 201,
+                    "code": 200,
                     "data": new_match.json()
                 }
-            ), 201
+            ), 200
 
         except:
             return jsonify(
@@ -319,17 +317,18 @@ def create_match_reject(user_chooser_id,user_suggested_id):
 @app.route("/create_match/<string:user_chooser_id>/<string:user_suggested_id>/1", methods=['POST'])
 def create_match_accept(user_chooser_id,user_suggested_id):
 
-    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id).first()
+    chooser_as_user2_match = session.query(Match).filter(Match.user_id2 == user_chooser_id, Match.user_id1 == user_suggested_id).first()
     
-    suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
+    # suggested_as_user1_match = session.query(Match).filter(Match.user_id1 == user_suggested_id).first()
 
     #checking if match with this 2 users exists
-    if (chooser_as_user2_match and suggested_as_user1_match):
-        chooser_as_user2_match.user2_match = 1
+    if (chooser_as_user2_match):
+        chooser_as_user2_match.user2_match = True
         matchid = chooser_as_user2_match.match_id
 
         # only if both swiped right on each other then
-        if (chooser_as_user2_match.user2_match == True and suggested_as_user1_match.user1_match == chooser_as_user2_match.user2_match):
+        ifMatch = False
+        if (chooser_as_user2_match.user2_match == True and chooser_as_user2_match.user1_match == True):
             ifMatch = True
             chooser_as_user2_match.dateMatched = datetime.today() #.strftime('%Y/%m/%d')
 
@@ -340,33 +339,34 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             if ifMatch:                
  
                 try:
-                    requests.post("http://localhost:5002/populate_dateprefs/{}".format(matchid))
+                    requests.post("http://127.0.0.1:5002/populate_dateprefs/{}".format(matchid))
 
                     try:
-                        requests.post("http://localhost:5002/date_recommendation/{}".format(matchid))
+                        requests.post("http://127.0.0.1:5002/date_recommendation/{}".format(matchid))
 
                     except:
                         return jsonify(
                             {
-                                "code": 500,
+                                "code": 502,
                                 "message": "An error occurred populating the date recommendation. Please try again."
                             }
-                        ), 500
+                        ), 502
 
                 except:
                     return jsonify(
                         {
-                            "code": 500,
+                            "code": 501,
                             "message": "An error occurred creating the date preference. Please try again."
                         }
-                    ), 500
+                    ), 501
 
             return jsonify(
                 {
-                    "code": 201,
-                    "data": chooser_as_user2_match.json()
+                    "code":     200,
+                    "data":     chooser_as_user2_match.json(),
+                    "matched":  ifMatch
                 }
-            ), 201
+            ), 200
 
 
         except:
@@ -389,18 +389,19 @@ def create_match_accept(user_chooser_id,user_suggested_id):
 
             return jsonify(
                 {
-                    "code": 201,
-                    "data": new_match.json()
+                    "code":     201,
+                    "data":     new_match.json(),
+                    "matched":  False
                 }
             ), 201
 
         except:
             return jsonify(
                 {
-                    "code": 500,
+                    "code": 503,
                     "message": "An error occurred creating the match. Please try again."
                 }
-            ), 500
+            ), 503
 
 
 
@@ -430,20 +431,29 @@ def delete_match(match_id):
         }
     ), 404
 
-# check if match match
-@app.route('/check_match', methods=['POST'])
-def check_match():
-    data = request.get_json()
-    # Extract the attributes from the request JSON data
-    user1_match = data['user1_match']
-    user2_match = data['user2_match']
-    # Check if the attributes are equal
-    if user1_match == user2_match:
-        result = True
-    else:
-        result = False
-    # Return the result as a JSON response
-    return jsonify({'result': result})
+
+@app.route("/match/ban/<string:user_id>", methods=['DELETE'])
+def delete_all_matches(user_id):
+    m1 = session.query(Match).filter(Match.user_id1 == user_id)
+    m2 = session.query(Match).filter(Match.user_id2 == user_id)
+    matches = m1.union(m2).all()
+
+    if matches:
+        for match in matches:
+            session.delete(match)
+        session.commit()
+        return jsonify(
+            {
+                "code": 200,
+                "message": "Deleted all matches related to user_id: {}".format(user_id)
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "Matches not found for user_id: {}".format(user_id)
+        }
+    ), 404
 
 
 # new -- populate datePrefs

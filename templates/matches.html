@@ -41,7 +41,7 @@
                 <a class="nav-link" aria-current="page" href="{{ url_for('home') }}">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" href="{{ url_for('matches') }}l">Matches</a>
+                <a class="nav-link active" href="{{ url_for('matches') }}">Matches</a>
               </li>
               <li class="nav-item dropdown account-details" style="position: absolute !important; right: 50px;">
                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -123,9 +123,11 @@
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                                [[  user  ]]
+                                                [[  user  ]] 
+
+                                                <!-- Report User Button -->
                                                 <a href="" class="text-muted" data-bs-toggle="popover" data-bs-placement="right" data-bs-content="Report User">
-                                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                                    <i class="fa-solid fa-circle-exclamation ms-1"></i>
                                                 </a>
                                             </h1>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -336,7 +338,7 @@
                 goMessage(matchId){
                     console.log("Go to message");
                     console.log('This is the match id: ' + matchId);
-                    window.location.href= "https://www.google.com.sg/"
+                    // window.location.href= "https://www.google.com.sg/"
                     window.location.href = "http://127.0.0.1:5000/get_all_messages/" + matchId;
                 },
                 selectItem(item) {
