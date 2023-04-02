@@ -1,0 +1,19 @@
+version: "3.8"
+
+volumes:
+  rabbitmq_data:
+
+services:
+ 
+  ###################################
+  # Order: The Order microservice
+  ###################################
+  user:
+    build:
+      context: ./
+      dockerfile: user.Dockerfile
+    image: jeremygmc/user:esd
+    restart: always
+    environment:
+      COCKROACHDB_URL: postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full
+      PYTHONUNBUFFERED: 1
