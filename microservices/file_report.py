@@ -89,9 +89,9 @@ class Report(Base):
 
 session_db = Session()
 
-user_URL = 'http://127.0.0.1:26257/user/'
-message_URL = 'http://127.0.0.1:5000/api/get_all_messages/'
-match_URL = 'http://127.0.0.1:5002/match/'
+user_URL = 'http://localhost:26257/user/'
+message_URL = 'http://localhost:5000/api/get_all_messages/'
+match_URL = 'http://localhost:5002/match/'
 
 @app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
 def add_report(userid, otherid, matchid):
