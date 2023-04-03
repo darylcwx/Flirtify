@@ -6,7 +6,7 @@ volumes:
 services:
  
   ###################################
-  # Order: The Order microservice
+  # User: The User microservice
   ###################################
   user:
     build:

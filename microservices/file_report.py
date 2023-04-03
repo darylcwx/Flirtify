@@ -89,17 +89,17 @@ class Report(Base):
 
 session_db = Session()
 
-user_URL = 'http://localhost:26257/user/'
+user_URL = 'http://127.0.0.1:26257/user/'
 message_URL = 'http://127.0.0.1:5000/api/get_all_messages/'
-match_URL = 'http://localhost:5002/match/'
+match_URL = 'http://127.0.0.1:5002/match/'
 
 @app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
 def add_report(userid, otherid, matchid):
     # print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n matchid:", matchid)
 
     # delete match 
-    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
-    # print('match_result:', match_result)  
+    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    print('match_result:', match_result)  
 
     # check messages
     result = checkMsg(otherid, matchid)
@@ -177,43 +177,21 @@ def add_report(userid, otherid, matchid):
         )
 
 
-@app.route('/reports')
-def get_reports():
-    reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
-    if (reports):
-        return jsonify(reports)
-    return jsonify(
-        {
-            "code": 404,
-            "message": "no reports."
-        }
-    ), 404
+# @app.route('/reports')
+# def get_reports():
+#     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+#     if (reports):
+#         return jsonify(reports)
+#     return jsonify(
+#         {
+#             "code": 404,
+#             "message": "no reports."
+#         }
+#     ), 404
 
 
 def checkMsg(otherid, matchid):
     messages = invoke_http(message_URL + matchid, method='GET', json=None) 
-    # messages = [ 
-    #     {'id': 1,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'fuck'},
-    #      {'id': 2,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'stupid'},
-    #      {'id': 3,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'dumbass'},
-    #      {'id': 4,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'tf'},
-    #      {'id': 5,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'hello'},
-    # ]
     print('msges: ', messages)
 
     if 'status_message' in messages and messages['status_message'] == 'There are no messages.':
@@ -231,6 +209,10 @@ def checkMsg(otherid, matchid):
             count += 1
 
     print('text: ', text)
+
+    if text.strip() == '':
+        return 'no profanities detected'
+
     data = {
         'text': text,
         'mode': 'standard',
