@@ -223,7 +223,11 @@
                             <div class="invalid-feedback">
                                 Message cannot be empty!
                             </div>
-                            {{ content }}
+                            <div class="text-center mt-4">
+                                <small>
+                                    {{ content }}
+                                </small>
+                            </div>
                         </div>
                         <div class="col-2 text-end">
                             <button type="submit" class="btn btn-outline-danger">Send</button>
@@ -325,8 +329,8 @@
         var receiving_user_id = report_a.getAttribute('receiving_user_id');
         var match_id = report_a.getAttribute('match_id');
 
-        var url = "http://127.0.0.1:5015/add_report/" + user_id + "/" + receiving_user_id + "/" + match_id;
-        axios.post(url)
+        var url = "http://localhost:5015/add_report/" + user_id + "/" + receiving_user_id + "/" + match_id;
+        axios.get(url)
             .then(response => {
                 var report_status = response.data;
                 console.log(report_status)
@@ -337,7 +341,6 @@
                 alert("Something went wrong when trying to report this user! Please try again.")
             });
     }
-
 
 </script>
 </body>

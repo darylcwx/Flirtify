@@ -97,13 +97,13 @@ match_URL = 'http://127.0.0.1:5002/match/'
 def add_report(userid, otherid, matchid):
     # print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n matchid:", matchid)
 
-    # delete match 
-    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
-    print('match_result:', match_result)  
-
     # check messages
     result = checkMsg(otherid, matchid)
     if result == 'api failed to check messages':
+        # delete match 
+        match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+        print('match_result:', match_result)  
+
         return jsonify(
             {
                 "code": 500,
@@ -114,6 +114,10 @@ def add_report(userid, otherid, matchid):
         )
     
     elif result == 'no profanities detected':
+        # delete match 
+        match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+        print('match_result:', match_result)  
+
         return jsonify(
             {
                 "code": 200,
@@ -129,6 +133,10 @@ def add_report(userid, otherid, matchid):
         otherid = otherid,
         matchid = matchid
         )
+    
+    # delete match 
+    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    print('match_result:', match_result)  
     
     try:
         session_db.add(new_report)
