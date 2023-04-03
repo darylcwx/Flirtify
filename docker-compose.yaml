@@ -4,6 +4,19 @@ volumes:
   rabbitmq_data:
 
 services:
+
+  ####################################
+  # RabbitMQ: The messaging broker   
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: esd-rabbit
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes: 
+      - rabbitmq_data:/var/lib/rabbitmq
  
   ###################################
   # User: The User microservice
@@ -17,9 +30,11 @@ services:
     ports:
       - 8000:26257
     environment:
-      COCKROACHDB_URL: postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full
       PYTHONUNBUFFERED: 1
 
+  ###################################
+  # Compatibility: The Compatibility microservice
+  ###################################
   compat:
     build:
       context: ./
@@ -31,6 +46,36 @@ services:
     ports:
       - 8001:7100
     environment:
-      userUrl: http://user:8000/user
-      COCKROACHDB_URL: postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full
+      PYTHONUNBUFFERED: 1
+
+  ###################################
+  # Match: The Match microservice
+  ###################################
+  match:
+    build:
+      context: ./
+      dockerfile: match.Dockerfile
+    image: jeremygmc/match:esd
+    depends_on:
+      - user
+    restart: always
+    ports:
+      - 8002:26257
+    environment:
+      PYTHONUNBUFFERED: 1
+  
+  ###################################
+  # Date Idea API: The dateideaapi microservice
+  ###################################
+  dateideaapi:
+    build:
+      context: ./
+      dockerfile: dateideaapi.Dockerfile
+    image: jeremygmc/dateideaapi:esd
+    depends_on:
+      - user
+    restart: always
+    ports:
+      - 5005:5005
+    environment:
       PYTHONUNBUFFERED: 1
