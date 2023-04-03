@@ -14,6 +14,23 @@ services:
       dockerfile: user.Dockerfile
     image: jeremygmc/user:esd
     restart: always
+    ports:
+      - 8000:26257
     environment:
+      COCKROACHDB_URL: postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full
+      PYTHONUNBUFFERED: 1
+
+  compat:
+    build:
+      context: ./
+      dockerfile: compat.Dockerfile
+    image: jeremygmc/compat:esd
+    depends_on:
+      - user
+    restart: always
+    ports:
+      - 8001:7100
+    environment:
+      userUrl: http://user:8000/user
       COCKROACHDB_URL: postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=verify-full
       PYTHONUNBUFFERED: 1
