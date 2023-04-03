@@ -164,13 +164,13 @@
     </nav>
 
 <body>
-<div class="container-fluid" style="min-height: calc(100% - 140px); padding-bottom: 120px; box-sizing: border-box; margin-bottom: 40px;">
+<div class="container-fluid" style="min-height: calc(100% - 140px); padding-bottom: 120px; box-sizing: border-box; margin-bottom: 70px;">
 
       <div class="row chat">
         <div class="col-3"></div>
         <div id="all-messages" class="col-6">
             <div class="row" style="background-color: #fcdcdc; position: -webkit-sticky; position: sticky; top: 0; z-index: 999;">
-                <div class="text-center fs-3" style="color: #e00747;">
+                <div class="text-center fs-3 mt-4" style="color: #e00747;">
                     <img class="matches-profile-pic" src="{{url_for('static', filename='stock-image.jpg')}}" alt="Profile Picture" style="width: 100px; height: 100px;"> 
                     <br>
                     {{ receiving_user_name }}
@@ -330,7 +330,13 @@
         var match_id = report_a.getAttribute('match_id');
 
         var url = "http://localhost:5015/add_report/" + user_id + "/" + receiving_user_id + "/" + match_id;
-        axios.get(url)
+        axios.get(url, 
+            {
+                headers: {
+                    "Access-Control-Allow-Origin": '*',
+                    'Access-Control-Allow-Headers': 'Authorization, Content-Type'
+                }  
+            })
             .then(response => {
                 var report_status = response.data;
                 console.log(report_status)
@@ -340,7 +346,24 @@
                 console.log(error)
                 alert("Something went wrong when trying to report this user! Please try again.")
             });
-    }
+
+            // fetch(url,
+            //       {
+            //           mode: 'cors'
+            //       })
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         var report_status = response.data;
+            //         console.log(report_status)
+            //         alert("We have received your report on this user and will take action should it be neccessary. Thank you for making Flirtify a safer place!");
+            
+            //     })
+            //     .catch(error => {
+            //       console.log(error);
+            //       alert("Something went wrong when trying to report this user! Please try again.")
+            //     });
+    }   
+        
 
 </script>
 </body>
