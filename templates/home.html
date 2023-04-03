@@ -249,8 +249,7 @@
           return {
             matchContent: false,
             suggested: "",
-            // user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
-            // user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
+            user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
             user_chooser_name: '',
             matchName : "",
             matchAge: "",
@@ -277,7 +276,7 @@
           // Getting session user's name
           getSessionUserInfo(){
             fetch(
-              "http://localhost:26257/user/" + this.user_chooser_id,
+              "http://127.0.0.1:26257/user/" + this.user_chooser_id,
                   {
                       mode: 'cors',
                   }
@@ -296,7 +295,7 @@
           loadFirstMatch(userId){
             fetch(
               // "http://localhost:7100/get_queue/" +user_id "/1"
-              "http://localhost:7100/get_queue/" + this.user_chooser_id +"/1",
+              "http://127.0.0.1:7100/get_queue/" + this.user_chooser_id +"/1",
                   {
                       mode: 'cors',
                   }
@@ -334,7 +333,7 @@
             // axios.get();
             fetch(
               // "http://localhost:7100/get_queue_async/" + UserId + numberToRetrieve.toString()
-              "http://localhost:7100/get_queue_async/" +this.user_chooser_id + "/" + numberToRetrieve.toString(),
+              "http://127.0.0.1:7100/get_queue_async/" +this.user_chooser_id + "/" + numberToRetrieve.toString(),
               {
                 mode: 'cors',
               }
