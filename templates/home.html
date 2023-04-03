@@ -69,7 +69,7 @@
     </div>
 </nav>
 
-  <body id="app" data-user-chooser-id="{{ session['user_id'] }}">
+  <body id="app" data-user-chooser-id="849811382203678721">
     <h1 class="display-6 text-center my-3">Welcome back, [[ this.user_chooser_name ]]! <br> 
       <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
     </h1>
@@ -176,8 +176,6 @@
                     <button @click="onSwipeAccept"
                       type="button"
                       class="btn btn-lg btn-danger"
-                      data-bs-toggle="modal"
-                      data-bs-target="#matchingModal"
                       id="like-btn"
                     >
                     <i class="fa-solid fa-heart"></i>
@@ -190,7 +188,7 @@
           </form>
 
           <!-- IF MATCH -->
-          <div v-if="showMatchModal">
+          <!-- <div v-if="showMatchModal">
             <div
             class="modal fade"
             id="matchingModal"
@@ -213,8 +211,6 @@
                   ></button>
                 </div>
                 <div class="modal-body">
-                  <!-- DISPLAY MATCH PICTURE HERE -->
-                  <!-- <img src="" alt=""> -->
                   <p class="text-center fs-4 fw-bold">IT'S A MATCH!</p>
                   <br>
                   <p class="text-center">You have matched with [[ matchName ]]!</p>
@@ -233,7 +229,7 @@
               </div>
             </div>
           </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -260,8 +256,6 @@
               'Desired First Date': "",
               'MBTI': "",
             },
-            showMatchModal: false,
-            chatLink: "",
           };
         },
 
@@ -448,12 +442,22 @@
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
-                  this.showMatchModal = data['matched'];
-                  this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];
-
-                  setTimeout(this.loadMatchQueueMsg(), 3000)
                   console.log('swiped and accepted');
-                  this.loadMatchQueue(userId, 1);
+                  if (data['matched']){
+                    confirm("You have a match! Click OK to go to message your match.");
+                    if (confirm(text) == true){
+                      window.href.location = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];;
+                    } else{
+                      console.log('User clicked cancel');
+                      setTimeout(this.loadMatchQueueMsg(), 3000)
+                      console.log('swiped and accepted');
+                      this.loadMatchQueue(userId, 1);
+                    }
+                  } else{
+                    setTimeout(this.loadMatchQueueMsg(), 3000)
+                    console.log('swiped and accepted');
+                    this.loadMatchQueue(userId, 1);
+                  }
                 })
                 .catch(error => {
                   console.log(error);
