@@ -54,7 +54,6 @@ def run_sql(sql):
         txn.execute(sql)
         
 def json(info):
-    result = {'info':info[0]}
     result = {"userid":info[0], "otherid":info[1], "matchid":info[2]}
     return result
 
@@ -122,8 +121,14 @@ def add_report(userid, otherid, matchid):
 # @app.route('/reports')
 # def get_reports():
 #     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+#     result = []
+    
+#     for report in reports:
+#         result.append(json(report))
+
 #     if (reports):
-#         return jsonify(reports)
+#         return result
+    
 #     return jsonify(
 #         {
 #             "code": 404,
