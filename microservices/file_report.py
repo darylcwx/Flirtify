@@ -61,9 +61,9 @@ def json(info):
 
 
 
-user_URL = 'http://localhost:26257/user/'
+user_URL = 'http://127.0.0.1:26257/user/'
 message_URL = 'http://127.0.0.1:5000/api/get_all_messages/'
-match_URL = 'http://localhost:5002/match/'
+match_URL = 'http://127.0.0.1:5002/match/'
 
 @app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
 def add_report(userid, otherid, matchid):
@@ -151,6 +151,10 @@ def checkMsg(otherid, matchid):
             count += 1
 
     print('text: ', text)
+
+    if text.strip() == '':
+        return 'no profanities detected'
+
     data = {
         'text': text,
         'mode': 'standard',
