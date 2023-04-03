@@ -271,4 +271,4 @@ def update_user(userid):
             
 
 if __name__ == '__main__':
-    app.run(port=26257, debug=True)
+    app.run(host='0.0.0.0', port=26257, debug=True)
