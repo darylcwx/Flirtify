@@ -149,7 +149,7 @@
             </ul>
           </div>
 
-          <button @click="toggleContent" class="btn btn-link text-danger mt-3 ms-2" type="button">More Details</button>
+          <button @click="toggleContent" id="dateDetails" class="btn btn-link text-danger mt-3 ms-2" type="button">More Details</button>
           <!-- <a href="#" @click="toggleContent" class="fs-6 ms-3 mt-3">More Details</a> -->
 
           <!-- FORM FOR MATCHING -->
@@ -173,7 +173,7 @@
                     <!-- <input type="hidden" name="user_chooser_id" v-model="user_chooser_id" value="{{ session['user_id'] }}">
                     <input type="hidden" name="user_suggested_id" v-model="user_suggested_id" :value="suggested"> -->
   
-                    <button @click="onSwipeAccept(); messageMatch();"
+                    <button @click="onSwipeAccept"
                       type="button"
                       class="btn btn-lg btn-danger"
                       data-bs-toggle="modal"
@@ -249,7 +249,8 @@
           return {
             matchContent: false,
             suggested: "",
-            user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
+            // user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
+            // user_chooser_id: document.getElementById('app').getAttribute('data-user-chooser-id'),
             user_chooser_name: '',
             matchName : "",
             matchAge: "",
@@ -386,6 +387,10 @@
           //function to show more details of match
           toggleContent(){
             this.matchContent = !this.matchContent;
+            if (this.matchContent)
+              document.getElementById('dateDetails').innerText = 'Less Details';
+            else
+              document.getElementById('dateDetails').innerText = 'More Details';
           },
 
 
@@ -393,6 +398,9 @@
           onSwipeReject(){
             console.log(this.user_chooser_id);
             console.log(this.suggested);
+
+            console.log('Changing the match name to empty string');
+            this.matchName = "";
 
             fetch("http://localhost:5002/create_match/"+this.user_chooser_id+"/"+this.suggested+"/"+0,
                   {
@@ -408,7 +416,8 @@
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
-                  this.loadMatchQueueMsg()
+                  setTimeout(this.loadMatchQueueMsg(), 3000)
+                  // this.loadMatchQueueMsg()
                   // this.matchName = '';
                   console.log('swiped but rejected');
                   this.loadMatchQueue(userId, 1);
@@ -422,6 +431,10 @@
 
           // function that retrieves another compatability result after a reject swipe
           onSwipeAccept(){
+
+            console.log('Changing the match name to empty string');
+            this.matchName = "";
+
             fetch("http://localhost:5002/create_match/"+this.user_chooser_id+"/"+this.suggested+"/"+1,
                   {
                       method: "POST",
@@ -436,7 +449,10 @@
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
-                  this.loadMatchQueueMsg()
+                  this.showMatchModal = data['matched'];
+                  this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];
+
+                  setTimeout(this.loadMatchQueueMsg(), 3000)
                   console.log('swiped and accepted');
                   this.loadMatchQueue(userId, 1);
                 })
@@ -446,42 +462,6 @@
                 });
 
             },
-
-            // function that pops the modal if the match is true
-            messageMatch(){
-              console.log('==============================');
-              console.log('Checking if match is true true');
-
-              fetch(
-              "http://localhost:5002/match/user/" + this.user_chooser_id,
-                {
-                    mode: 'cors',
-                })
-              .then((response) => response.json())
-              .then((data) => {
-                console.log(data)
-
-                // iterate through the data to find each match object
-                for (var i = 0; i < data['data'].length; i++){
-                  // Checking if user_id1 or user_id2 is the current user
-                  if (data['data'][i]['user1_id'] == this.user_chooser_id){
-                    // Checking if suggested user = user2_id user1_match and user2_match are both true
-                    if (this.suggested == data['data'][i]['user2_id'] && data['data'][i]['user2_match'] == true && data['data'][i]['user1_match'] == true){
-                      this.showMatchModal = true;
-                      this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data'][i]['match_id'];
-                    }
-                  } else {
-                    if (this.suggested == data['data'][i]['user1_id'] && data['data'][i]['user1_match'] == true && data['data'][i]['user2_match'] == true){
-                      this.showMatchModal = true;
-                      this.chatLink = 'http://127.0.0.1:5000:get_all_messages/' + data['data'][i]['match_id'];
-                    }
-                  }
-                }
-              })
-              .catch((error) => {
-                console.error('Error:', error);
-              });
-              },
 
               goChat(){
                 window.location.href = this.chatLink;
