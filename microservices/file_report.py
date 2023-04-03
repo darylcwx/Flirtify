@@ -90,7 +90,7 @@ class Report(Base):
 session_db = Session()
 
 user_URL = 'http://localhost:26257/user/'
-message_URL = 'http://localhost:5000/api/get_all_messages/'
+message_URL = 'http://127.0.0.1:5000/api/get_all_messages/'
 match_URL = 'http://localhost:5002/match/'
 
 @app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
@@ -98,8 +98,8 @@ def add_report(userid, otherid, matchid):
     # print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n matchid:", matchid)
 
     # delete match 
-    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
-    print('match_result:', match_result)  
+    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    # print('match_result:', match_result)  
 
     # check messages
     result = checkMsg(otherid, matchid)
@@ -214,11 +214,15 @@ def checkMsg(otherid, matchid):
     #      'sender_id': 456,
     #      'content': 'hello'},
     # ]
-    print(messages)
+    print('msges: ', messages)
+
+    if 'status_message' in messages and messages['status_message'] == 'There are no messages.':
+        return 'no profanities detected'
 
     text = ''
     count = 0
-    for msg in messages:
+    for msg in messages['messages']:
+        print(msg)
         if count > 20:
             break
 
