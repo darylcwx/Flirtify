@@ -1,16 +1,12 @@
-from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
 from sqlalchemy_cockroachdb import run_transaction
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, null
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import aliased
 import requests
-import json
 from datetime import datetime
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
@@ -338,10 +334,10 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             if ifMatch:                
  
                 try:
-                    requests.post("http://127.0.0.1:5002/populate_dateprefs/{}".format(matchid))
+                    requests.post("http://match:26257/populate_dateprefs/{}".format(matchid))
 
                     try:
-                        requests.post("http://127.0.0.1:5002/date_recommendation/{}".format(matchid))
+                        requests.post("http://match:26257/date_recommendation/{}".format(matchid))
 
                     except:
                         return jsonify(
@@ -560,4 +556,4 @@ def populate_dateIdea(match_id):
 #     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
-    app.run(port=5002, debug=True)
+    app.run(host='0.0.0.0', port=26257, debug=True)

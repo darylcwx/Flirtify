@@ -188,8 +188,14 @@ def add_report(userid, otherid, matchid):
 # @app.route('/reports')
 # def get_reports():
 #     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+#     result = []
+    
+#     for report in reports:
+#         result.append(json(report))
+
 #     if (reports):
-#         return jsonify(reports)
+#         return result
+    
 #     return jsonify(
 #         {
 #             "code": 404,
