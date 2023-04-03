@@ -1,7 +1,7 @@
 from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
-from cockroachdb.sqlalchemy import run_transaction
+from sqlalchemy_cockroachdb import run_transaction
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, null
 from sqlalchemy.ext.declarative import declarative_base
@@ -20,8 +20,7 @@ app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
-
+engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
