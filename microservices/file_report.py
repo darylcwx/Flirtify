@@ -1,13 +1,21 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
 import os, sys
-import psycopg
+# import psycopg
 import requests
 from invokes import invoke_http
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import json as jsonnn
+from pyexpat.errors import messages
+from cockroachdb.sqlalchemy import run_transaction
+from numpy import mat
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
+import requests
+
 
 conn_string = "postgresql://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify.flirtify?sslmode=verify-full"
 
@@ -33,32 +41,53 @@ engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-404
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
-class Report(db.Model):
+Base = declarative_base()
+
+# class Report(db.Model):
+#     __tablename__ = 'report'
+    
+#     userid = db.Column(db.Integer, primary_key=True)
+#     otherid = db.Column(db.Integer, primary_key=True)
+#     matchid = db.Column(db.Integer)
+    
+#     def __init__(self, userid, otherid, matchid):
+#         self.userid = userid
+#         self.otherid = otherid
+
+# def get_conn():
+#     conn = psycopg.connect(**conn_params, autocommit=True)
+#     return conn
+
+# def run_sql(sql):
+#     with get_conn() as txn:
+#         txn.execute(sql)
+        
+# def json(info):
+#     result = {'info':info[0]}
+#     result = {"userid":info[0], "otherid":info[1], "matchid":info[2]}
+#     return result
+
+class Report(Base):
     __tablename__ = 'report'
-    
-    userid = db.Column(db.Integer, primary_key=True)
-    otherid = db.Column(db.Integer, primary_key=True)
-    matchid = db.Column(db.Integer)
-    
+
+    userid = Column(Integer, primary_key=True)
+    otherid = Column(Integer, primary_key=True)
+    matchid = Column(Integer)
+
     def __init__(self, userid, otherid, matchid):
         self.userid = userid
         self.otherid = otherid
+        self.matchid = matchid
 
-def get_conn():
-    conn = psycopg.connect(**conn_params, autocommit=True)
-    return conn
+    def json(self):
+        result = {
+            'userid'  : self.userid,
+            'otherid' : self.otherid,
+            'matchid' : self.matchid
+        }
+        return result
 
-def run_sql(sql):
-    with get_conn() as txn:
-        txn.execute(sql)
-        
-def json(info):
-    result = {'info':info[0]}
-    result = {"userid":info[0], "otherid":info[1], "matchid":info[2]}
-    return result
-
-
-
+session_db = Session()
 
 user_URL = 'http://localhost:26257/user/'
 message_URL = 'http://localhost:5000/api/get_all_messages/'
@@ -95,18 +124,48 @@ def add_report(userid, otherid, matchid):
         )
 
     # add report into database
-    get_conn().cursor().execute("INSERT INTO public.report (userid, otherid, matchid) VALUES (%s, %s, %s)", (userid, otherid, matchid))
-    reps = get_conn().cursor().execute("SELECT * from public.report WHERE otherid = %s", (otherid,)).fetchall()
-
-    if len(reps) >= 5:
-        print('\n\n-----Invoking user microservice-----')
-        user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
-        print('user_result:', user_result)   
+    new_report = Report(
+        userid = userid,
+        otherid = otherid,
+        matchid = matchid
+        )
+    
+    try:
+        session_db.add(new_report)
+        session_db.commit()
         
-        report_status = "Number of reports exceeded 5, user deleted"
+        reps = session_db.query(Report).filter(Report.otherid == otherid).all()
 
-    else:
-        report_status = "Number of reports increased by 1, total reports: " + str(len(reps)+1)
+        if len(reps) >= 5:
+            print('\n\n-----Invoking user microservice-----')
+            user_result = invoke_http(user_URL + otherid , method="DELETE", json=None) 
+            print('user_result:', user_result)   
+
+            try:
+                requests.post("http://127.0.0.1:5002/match/ban/{}".format(otherid))
+                report_status = "Number of reports exceeded 5, user deleted"
+
+            except:
+                return jsonify(
+                    {
+                        "code": 502,
+                        "data": "An error occurred removing all matches related to reported user. Please try again."
+                    }
+                ), 502
+            
+        else:
+            report_status = "Number of reports increased by 1, total reports: " + str(len(reps)+1)
+        
+    except Exception as e:
+        session_db.rollback()
+        app.logger.error(f"Error committing session: {str(e)}")
+        return jsonify(
+            {
+                "code": 500,
+                "message": "There was an error sending your report. Please try again."
+            }
+        ) 
+        
 
     return jsonify(
             {
