@@ -70,8 +70,8 @@ def add_report(userid, otherid, matchid):
     # print("\nReceived a report from userID:", userid, " reporting userID:", otherid, "\n matchid:", matchid)
 
     # delete match 
-    # match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
-    # print('match_result:', match_result)  
+    match_result = invoke_http(match_URL + matchid, method='DELETE', json=None) 
+    print('match_result:', match_result)  
 
     # check messages
     result = checkMsg(otherid, matchid)
@@ -119,43 +119,21 @@ def add_report(userid, otherid, matchid):
         )
 
 
-@app.route('/reports')
-def get_reports():
-    reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
-    if (reports):
-        return jsonify(reports)
-    return jsonify(
-        {
-            "code": 404,
-            "message": "no reports."
-        }
-    ), 404
+# @app.route('/reports')
+# def get_reports():
+#     reports = get_conn().cursor().execute("SELECT * from public.report").fetchall()
+#     if (reports):
+#         return jsonify(reports)
+#     return jsonify(
+#         {
+#             "code": 404,
+#             "message": "no reports."
+#         }
+#     ), 404
 
 
 def checkMsg(otherid, matchid):
     messages = invoke_http(message_URL + matchid, method='GET', json=None) 
-    # messages = [ 
-    #     {'id': 1,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'fuck'},
-    #      {'id': 2,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'stupid'},
-    #      {'id': 3,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'dumbass'},
-    #      {'id': 4,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'tf'},
-    #      {'id': 5,
-    #      'match_id': 1,
-    #      'sender_id': 456,
-    #      'content': 'hello'},
-    # ]
     print('msges: ', messages)
 
     if 'status_message' in messages and messages['status_message'] == 'There are no messages.':
