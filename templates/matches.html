@@ -170,7 +170,9 @@
 
             <!-- IF NO MATCHES -->
             <div class="text-center mt-5" v-else>
-                <h1 class="display-5">You have no matches <b>YET</b>!</h1>
+                <h1 class="display-5 ">Hey [[user_chooser_name]], 
+                    <br>
+                    You have no matches <b>YET</b>!</h1>
                 <form action="{{url_for('home')}}">
                     <button type="submit" class="btn btn-danger mt-4">Swipe more!</button>
                 </form>
@@ -310,7 +312,8 @@
 
                     })
                     .catch(error => {
-                        console.log(error.message)
+                        console.log(error.message);
+                        this.matchesResult = 0;
                     });
                 },
 
