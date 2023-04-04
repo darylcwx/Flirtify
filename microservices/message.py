@@ -2,7 +2,7 @@ import json
 from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
-# from sqlalchemy_cockroachdb import run_transaction
+from sqlalchemy_cockroachdb import run_transaction
 from numpy import mat
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,7 +19,7 @@ app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
@@ -60,8 +60,8 @@ def matches():
 @app.route('/get_all_messages/<match_id>')
 def index(match_id):
     # session storing of user id but this will be replaced by the session storage when user logs in
-
-    logged_in_user = 849811382203678721
+    session['user_id'] = 849811382203678721
+    logged_in_user = session['user_id']
 
     url = f"http://localhost:5002/match/{match_id}"
     match = requests.get(url).json()
