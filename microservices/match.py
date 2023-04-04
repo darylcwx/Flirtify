@@ -355,11 +355,22 @@ def create_match_accept(user_chooser_id,user_suggested_id):
                             "message": "An error occurred creating the date preference. Please try again."
                         }
                     ), 501
+                
+            return_data = {
+                    'dateIdea': chooser_as_user2_match.dateIdea,
+                    'dateMatched': chooser_as_user2_match.dateMatched,
+                    'datePrefs': chooser_as_user2_match.dateMatched,
+                    'match_id': str(matchid),
+                    'user1_match': chooser_as_user2_match.user1_match,
+                    'user2_match': chooser_as_user2_match.user2_match,
+                    'user_id1': str(chooser_as_user2_match.user_id1),
+                    'user_id2': str(chooser_as_user2_match.user_id2),
+                    }
 
             return jsonify(
                 {
                     "code":     200,
-                    "data":     chooser_as_user2_match.json(),
+                    "data":     return_data,
                     "matched":  ifMatch
                 }
             ), 200

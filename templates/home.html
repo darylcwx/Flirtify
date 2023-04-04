@@ -69,7 +69,7 @@
     </div>
 </nav>
 
-  <body id="app" data-user-chooser-id="849811382203678721">
+  <body id="app" data-user-chooser-id="849412270226374657">
     <h1 class="display-6 text-center my-3">Welcome back, [[ this.user_chooser_name ]]! <br> 
       <span class="fs-2 fw-semibold"> Swipe Away ~ <i class="fa-regular fa-face-kiss-wink-heart fa-bounce" style="color: #dc3545;"></i></span>
     </h1>
@@ -447,7 +447,7 @@
                     let text = "You have a match! Click OK to go to message your match.";
                     if (confirm(text) == true){
                       console.log('Heading to message')
-                      window.location.href = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];;
+                      window.location.href = 'http://127.0.0.1:5000/get_all_messages/' + data['data']['match_id'];;
                     } else{
                       console.log('User clicked cancel');
                       setTimeout(this.loadMatchQueueMsg(), 3000)
