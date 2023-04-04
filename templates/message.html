@@ -10,7 +10,7 @@
         <link rel="icon" type="image/x-icon" href="{{url_for('static', filename='flirtify-favicon.png')}}">
     
         <!-- CSS Style -->
-        <link rel = 'stylesheet' href = '{{url_for('static', filename='style.css')}}'>
+        <link rel = 'stylesheet' href = "{{url_for('static', filename='style.css')}}">
     
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
@@ -60,7 +60,7 @@
 
             .yours .message {
                 margin-right: 25%;
-                background-color: #fcdcdc;
+                background-color: #e0cece;
                 position: relative;
             }
 
@@ -72,7 +72,7 @@
                 left: -7px;
                 height: 20px;
                 width: 20px;
-                background: #eee;
+                background: #e0cece;
                 border-bottom-right-radius: 15px;
             }
             .yours .message.last:after {
@@ -164,31 +164,37 @@
     </nav>
 
 <body>
-<div class="container-fluid" style="min-height: calc(100% - 140px); padding-bottom: 120px; box-sizing: border-box; margin-bottom: 40px;">
+<div class="container-fluid" style="min-height: calc(100% - 140px); padding-bottom: 120px; box-sizing: border-box; margin-bottom: 70px;">
 
       <div class="row chat">
         <div class="col-3"></div>
         <div id="all-messages" class="col-6">
-            <div class="text-center fs-3" style="color: #e00747; position: sticky;">
-                <img class="matches-profile-pic" src="{{url_for('static', filename='stock-image.jpg')}}" alt="Profile Picture" style="width: 100px; height: 100px;"> 
-                <br>
-                {{ receiving_user_name }}
+            <div class="row" style="background-color: #fcdcdc; position: -webkit-sticky; position: sticky; top: 0; z-index: 999;">
+                <div class="text-center fs-3 mt-4" style="color: #e00747;">
+                    <img class="matches-profile-pic" src="{{url_for('static', filename='stock-image.jpg')}}" alt="Profile Picture" style="width: 100px; height: 100px;"> 
+                    <br>
+                    {{ receiving_user_name }}
+                </div>
+                <div class="text-center">
+                    <small class="report"><a href="" id="report" user_id="{{ user_id }}" receiving_user_id="{{ receiving_user_id }}" match_id="{{ match_id }}" onclick="report_user(event)">Something amiss? Report.</a></small>
+                </div>
             </div>
+            
             {% if all_messages %}
                 {% for message in all_messages %}
-                    {% if message.sender_id == user_id %}
+                    {% if message.sender_id|string == user_id %}
                         <div class="mine messages">
                             <div class="message last">
                                 {{ message.content }}
                             </div>
-                            <small class="report"><a href="">report</a></small>
+                            <!-- <small class="report"><a href="">report</a></small> -->
                         </div>
                     {% else %}
                         <div class="yours messages">
                             <div class="message last">
                                 {{ message.content }}
                             </div>
-                            <small class="report"><a href="">report</a></small>
+                            <!-- <small class="report"><a href="">report</a></small> -->
                         </div>
                     {% endif %}
                 {% endfor %}
@@ -217,7 +223,11 @@
                             <div class="invalid-feedback">
                                 Message cannot be empty!
                             </div>
-                            {{ content }}
+                            <div class="text-center mt-4">
+                                <small>
+                                    {{ content }}
+                                </small>
+                            </div>
                         </div>
                         <div class="col-2 text-end">
                             <button type="submit" class="btn btn-outline-danger">Send</button>
@@ -310,6 +320,50 @@
 
     reload_messages()
 
+
+    function report_user(event) {
+        event.preventDefault();
+        
+        var report_a = document.getElementById('report');
+        var user_id = report_a.getAttribute('user_id');
+        var receiving_user_id = report_a.getAttribute('receiving_user_id');
+        var match_id = report_a.getAttribute('match_id');
+
+        var url = "http://localhost:5015/add_report/" + user_id + "/" + receiving_user_id + "/" + match_id;
+        axios.get(url, 
+            {
+                headers: {
+                    "Access-Control-Allow-Origin": '*',
+                    'Access-Control-Allow-Headers': 'Authorization, Content-Type'
+                }  
+            })
+            .then(response => {
+                var report_status = response.data;
+                console.log(report_status)
+                alert("We have received your report on this user and will take action should it be neccessary. Thank you for making Flirtify a safer place!");
+            })
+            .catch(error => {
+                console.log(error)
+                alert("Something went wrong when trying to report this user! Please try again.")
+            });
+
+            // fetch(url,
+            //       {
+            //           mode: 'cors'
+            //       })
+            //     .then(response => response.json())
+            //     .then(data => {
+            //         var report_status = response.data;
+            //         console.log(report_status)
+            //         alert("We have received your report on this user and will take action should it be neccessary. Thank you for making Flirtify a safer place!");
+            
+            //     })
+            //     .catch(error => {
+            //       console.log(error);
+            //       alert("Something went wrong when trying to report this user! Please try again.")
+            //     });
+    }   
+        
 
 </script>
 </body>
