@@ -13,8 +13,8 @@ services:
     hostname: esd-rabbit
     restart: always
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - 5672:5672
+      - 15672:15672
     volumes: 
       - rabbitmq_data:/var/lib/rabbitmq
  
@@ -44,7 +44,7 @@ services:
       - user
     restart: always
     ports:
-      - 8001:7100
+      - 7100:7100
     environment:
       PYTHONUNBUFFERED: 1
 
@@ -60,7 +60,8 @@ services:
       - user
     restart: always
     ports:
-      - 8002:26257
+      - 26257:26257
+      - 5002:5002
     environment:
       PYTHONUNBUFFERED: 1
   
@@ -77,5 +78,37 @@ services:
     restart: always
     ports:
       - 5005:5005
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  ###################################
+  # File Report: The File Report microservice
+  ###################################
+  report:
+    build:
+      context: ./
+      dockerfile: report.Dockerfile
+    image: jeremygmc/report:esd
+    depends_on:
+      - user
+    restart: always
+    ports:
+      - 5015:5015
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  ###################################
+  # Messages: The Messages microservice
+  ###################################
+  messages:
+    build:
+      context: ./
+      dockerfile: messages.Dockerfile
+    image: jeremygmc/messages:esd
+    depends_on:
+      - user
+    restart: always
+    ports:
+      - 5000:5000
     environment:
       PYTHONUNBUFFERED: 1

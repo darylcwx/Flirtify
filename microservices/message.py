@@ -1,14 +1,11 @@
 import json
-from pyexpat.errors import messages
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
 from sqlalchemy_cockroachdb import run_transaction
-from numpy import mat
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
 import requests
 
 
@@ -64,7 +61,7 @@ def index(match_id):
     session['user_id'] = 849811382185000961
     logged_in_user = session['user_id']
 
-    url = f"http://localhost:5002/match/{match_id}"
+    url = f"http://localhost:26257/match/{match_id}"
     match = requests.get(url).json()
     
     user_id1 = match['data']['user_id1']
@@ -75,7 +72,7 @@ def index(match_id):
     else:
         receiving_user = user_id1
 
-    url = f"http://localhost:26257/user/{str(receiving_user)}"
+    url = f"http://localhost:8000/user/{str(receiving_user)}"
     receiving_user_object = requests.get(url).json()
 
     receiving_user_id = receiving_user_object['data']['id']

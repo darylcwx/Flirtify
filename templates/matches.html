@@ -31,7 +31,7 @@
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('home') }}"">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
                 <img src="https://github.com/darylcwx/Flirtify/blob/main/static/flirtify-logo.png?raw=true" alt="Flirtify Logo" width="40" height="24" class="d-inline-block align-text-top">
                 <!-- <span class="fs-4">Flirtify</span> -->
               </a>
@@ -214,7 +214,7 @@
             methods : {
                 getSessionUserInfo(){
                     fetch(
-                    "http://127.0.0.1:26257/user/" + this.user_chooser_id,
+                    "http://localhost:8000/user/" + this.user_chooser_id,
                         {
                             mode: 'cors',
                         }
@@ -231,7 +231,7 @@
                 },
 
                 getMatches() {
-                    axios.get("http://127.0.0.1:5002/successful_match/" + this.user_chooser_id, 
+                    axios.get("http://localhost:5002/successful_match/" + this.user_chooser_id, 
                         {
                           headers: {
                                 "Access-Control-Allow-Origin": '*'
@@ -318,7 +318,7 @@
                     // Let's get the user's information
                     matchUserId = matchUserId.toString();
                     fetch(
-                        "http://localhost:26257/user/" + matchUserId,
+                        "http://localhost:8000/user/" + matchUserId,
                         {
                             mode: 'cors',
                         }
@@ -363,7 +363,7 @@
                     console.log("Go to message");
                     console.log('This is the match id: ' + matchId);
                     // window.location.href= "https://www.google.com.sg/"
-                    window.location.href = "http://127.0.0.1:5000/get_all_messages/" + matchId;
+                    window.location.href = "http://localhost:5000/get_all_messages/" + matchId;
                 },
                 selectItem(item) {
                     this.date = item;

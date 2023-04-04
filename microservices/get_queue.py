@@ -89,7 +89,7 @@ async def get_queue_async(user1id, num):
         ), 200
 
 def get_compatibility(user1id, num):
-    user_URL = "http://localhost:26257/user"
+    user_URL = "http://localhost:8000/user"
     #====================================================================
     # ACCESS USER MICROSERVICE TO GET USER OBJECTS
     user1 = invoke_http(user_URL + "/" + user1id, method='GET')
