@@ -77,6 +77,7 @@ def index(match_id):
     url = f"http://localhost:26257/user/{str(receiving_user)}"
     receiving_user_object = requests.get(url).json()
 
+    receiving_user_id = receiving_user_object['data']['id']
     receiving_user_name = receiving_user_object['data']['firstname']
 
     messages = session_db.query(Message).filter(Message.match_id == match_id).all()
@@ -98,9 +99,9 @@ def index(match_id):
         content_from_send = request.args.get('content')
         # decode the variable from the string
         content_str = json.loads(content_from_send)
-        return render_template('message.html', content=content_str['message'], all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
+        return render_template('message.html', content=content_str['message'], all_messages=all_match_messages, user_id=str(logged_in_user), receiving_user_id=str(receiving_user_id), receiving_user_name=receiving_user_name, match_id=str(match_id))
     else:
-        return render_template('message.html', all_messages=all_match_messages, user_id=logged_in_user, receiving_user_name=receiving_user_name, match_id=match_id)
+        return render_template('message.html', all_messages=all_match_messages, user_id=str(logged_in_user), receiving_user_id=str(receiving_user_id), receiving_user_name=receiving_user_name, match_id=str(match_id))
 
     # return in json format
     # return jsonify({
