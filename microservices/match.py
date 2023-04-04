@@ -1,14 +1,15 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
-from sqlalchemy_cockroachdb import run_transaction
+# from sqlalchemy_cockroachdb import run_transaction
 from sqlalchemy import create_engine, null
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Date
+from sqlalchemy.orm import aliased
 from sqlalchemy.dialects.postgresql import ARRAY
 import requests
 from datetime import datetime
-
+import json
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 app.config['SECRET_KEY'] = 'flirtify_esd_micro'
 app.config['SESSION_COOKIE_DOMAIN'] = '127.0.0.1'
@@ -16,7 +17,7 @@ app.config['SESSION_COOKIE_PATH'] = '/'
 CORS(app)
 
 # Configure the SQLAlchemy engine to use CockroachDB
-engine = create_engine('cockroachdb+psycopg2://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
+engine = create_engine('cockroachdb://jeremy:GvtUwDUhQOYrlDC7jEbblg@flirtify-4040.6xw.cockroachlabs.cloud:26257/flirtify?sslmode=require')
 # Create a SQLAlchemy session factory to manage database connections
 Session = sessionmaker(bind=engine)
 
@@ -334,10 +335,10 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             if ifMatch:                
  
                 try:
-                    requests.post("http://match:26257/populate_dateprefs/{}".format(matchid))
+                    requests.post("http://127.0.0.1:5002/populate_dateprefs/{}".format(matchid))
 
                     try:
-                        requests.post("http://match:26257/date_recommendation/{}".format(matchid))
+                        requests.post("http://127.0.0.1:5002/date_recommendation/{}".format(matchid))
 
                     except:
                         return jsonify(
@@ -462,7 +463,7 @@ def populate_datepref(match_id):
     dateprefs = []
     
     for userid in [user1, user2]:
-        user_data = requests.get("http://localhost:26257/user/{}".format(userid))
+        user_data = requests.get("http://localhost:5002/user/{}".format(userid))
        
         if user_data.status_code == 200 and 'application/json' in user_data.headers.get('content-type'):
             json_data = user_data.json()['data']
@@ -556,4 +557,4 @@ def populate_dateIdea(match_id):
 #     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=26257, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)

@@ -89,7 +89,8 @@ async def get_queue_async(user1id, num):
         ), 200
 
 def get_compatibility(user1id, num):
-    user_URL = "http://user:26257/user"
+    user_URL = "http://localhost:26257/user"
+    # user_URL = "http://user:26257/user"
     # user_URL = os.environ.get('userURL')
     #====================================================================
     # ACCESS USER MICROSERVICE TO GET USER OBJECTS
