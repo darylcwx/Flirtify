@@ -413,7 +413,7 @@
                   // this.loadMatchQueueMsg()
                   // this.matchName = '';
                   console.log('swiped but rejected');
-                  this.loadMatchQueue(userId, 1);
+                  this.loadMatchQueue(this.user_chooser_id, 1);
                 })
                 .catch(error => {
                   console.log(error);
@@ -444,19 +444,20 @@
                   console.log(data);
                   console.log('swiped and accepted');
                   if (data['matched']){
-                    confirm("You have a match! Click OK to go to message your match.");
+                    let text = "You have a match! Click OK to go to message your match.";
                     if (confirm(text) == true){
-                      window.href.location = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];;
+                      console.log('Heading to message')
+                      window.location.href = 'http://127.0.0.1:5000:get_all_messages/' + data['data']['match_id'];;
                     } else{
                       console.log('User clicked cancel');
                       setTimeout(this.loadMatchQueueMsg(), 3000)
                       console.log('swiped and accepted');
-                      this.loadMatchQueue(userId, 1);
+                      this.loadMatchQueue(this.user_chooser_id, 1);
                     }
                   } else{
                     setTimeout(this.loadMatchQueueMsg(), 3000)
                     console.log('swiped and accepted');
-                    this.loadMatchQueue(userId, 1);
+                    this.loadMatchQueue(this.user_chooser_id, 1);
                   }
                 })
                 .catch(error => {
@@ -466,9 +467,9 @@
 
             },
 
-              goChat(){
-                window.location.href = this.chatLink;
-              }
+              // goChat(){
+              //   window.location.href = this.chatLink;
+              // }
         },
 
         mounted() {
