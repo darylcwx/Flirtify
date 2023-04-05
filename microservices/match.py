@@ -270,10 +270,22 @@ def create_match_reject(user_chooser_id,user_suggested_id):
             # # call the two urls
 
             session.commit()
+
+            return_data = {
+                         'dateIdea': chooser_as_user2_match.dateIdea,
+                         'dateMatched': chooser_as_user2_match.dateMatched,
+                         'datePrefs': chooser_as_user2_match.dateMatched,
+                         'match_id': str(chooser_as_user2_match.match_id),
+                         'user1_match': chooser_as_user2_match.user1_match,
+                         'user2_match': chooser_as_user2_match.user2_match,
+                         'user_id1': str(chooser_as_user2_match.user_id1),
+                         'user_id2': str(chooser_as_user2_match.user_id2),
+                         }
+
             return jsonify(
                 {
                     "code": 201,
-                    "data": chooser_as_user2_match.json()
+                    "data": return_data
                 }
             ), 201
 
@@ -294,12 +306,23 @@ def create_match_reject(user_chooser_id,user_suggested_id):
             session.add(new_match)
             session.commit()
 
+            return_data = {
+                         'dateIdea': new_match.dateIdea,
+                         'dateMatched': new_match.dateMatched,
+                         'datePrefs': new_match.dateMatched,
+                         'match_id': str(new_match.match_id),
+                         'user1_match': new_match.user1_match,
+                         'user2_match': new_match.user2_match,
+                         'user_id1': str(new_match.user_id1),
+                         'user_id2': str(new_match.user_id2),
+                         }
+
             return jsonify(
                 {
-                    "code": 200,
-                    "data": new_match.json()
+                    "code": 201,
+                    "data": return_data
                 }
-            ), 200
+             ), 201
 
         except:
             return jsonify(
@@ -393,13 +416,23 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             session.add(new_match)
             session.commit()
 
+            return_data = {
+                         'dateIdea': new_match.dateIdea,
+                         'dateMatched': new_match.dateMatched,
+                         'datePrefs': new_match.dateMatched,
+                         'match_id': str(new_match.match_id),
+                         'user1_match': new_match.user1_match,
+                         'user2_match': new_match.user2_match,
+                         'user_id1': str(new_match.user_id1),
+                         'user_id2': str(new_match.user_id2),
+                         }
+
             return jsonify(
                 {
-                    "code":     201,
-                    "data":     new_match.json(),
-                    "matched":  False
+                    "code": 201,
+                    "data": return_data
                 }
-            ), 201
+             ), 201
 
         except:
             return jsonify(
@@ -567,4 +600,4 @@ def populate_dateIdea(match_id):
 #     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=26257, debug=True)
+    app.run(host='0.0.0.0', port=5002t a, debug=True)
