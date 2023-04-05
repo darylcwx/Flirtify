@@ -346,7 +346,7 @@
             console.log('Loading Match Queue Message');
 
             fetch(
-              "http://localhost:7100/get_queue_msg",
+              "http://localhost:26257/get_queue_msg",
                   {
                       mode: 'cors',
                   }
@@ -447,7 +447,7 @@
                     let text = "You have a match! Click OK to go to message your match.";
                     if (confirm(text) == true){
                       console.log('Heading to message')
-                      window.location.href = 'http://127.0.0.1:5000/get_all_messages/' + data['data']['match_id'];;
+                      window.location.href = 'http://localhost:5000/get_all_messages/' + data['data']['match_id'];;
                     } else{
                       console.log('User clicked cancel');
                       setTimeout(this.loadMatchQueueMsg(), 3000)

@@ -60,7 +60,7 @@ async def get_queue_async(user1id, num):
     result = get_compatibility(user1id, num) #response object
     json_result = result.get_json() #json object
     try:
-        RABBITMQ_HOST = os.environ.get('RABBITMQ_HOST', 'localhost')
+        RABBITMQ_HOST = os.environ.get('esd-rabbitmq', 'localhost')
         port = 5672
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
         channel = connection.channel()
@@ -89,7 +89,7 @@ async def get_queue_async(user1id, num):
         ), 200
 
 def get_compatibility(user1id, num):
-    user_URL = "http://localhost:8000/user"
+    user_URL = "http://user:26257/user"
     #====================================================================
     # ACCESS USER MICROSERVICE TO GET USER OBJECTS
     user1 = invoke_http(user_URL + "/" + user1id, method='GET')

@@ -60,8 +60,7 @@ services:
       - user
     restart: always
     ports:
-      - 26257:26257
-      - 5002:5002
+      - 5002:26257
     environment:
       PYTHONUNBUFFERED: 1
   
