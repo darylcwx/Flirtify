@@ -270,10 +270,21 @@ def create_match_reject(user_chooser_id,user_suggested_id):
             # # call the two urls
 
             session.commit()
+            
+            return_data = {
+                'dateIdea': chooser_as_user2_match.dateIdea,
+                'dateMatched': chooser_as_user2_match.dateMatched,
+                'datePrefs': chooser_as_user2_match.datePrefs,
+                'match_id': str(chooser_as_user2_match.match_id),
+                'user1_match': chooser_as_user2_match.user1_match,
+                'user2_match': chooser_as_user2_match.user2_match,
+                'user_id1': str(chooser_as_user2_match.user_id1),
+                'user_id2': str(chooser_as_user2_match.user_id2),
+                }
             return jsonify(
                 {
                     "code": 201,
-                    "data": chooser_as_user2_match.json()
+                    "data": return_data
                 }
             ), 201
 
@@ -294,10 +305,21 @@ def create_match_reject(user_chooser_id,user_suggested_id):
             session.add(new_match)
             session.commit()
 
+            return_data = {
+                        'dateIdea': new_match.dateIdea,
+                        'dateMatched': new_match.dateMatched,
+                        'datePrefs': new_match.datePrefs,
+                        'match_id': str(new_match.match_id),
+                        'user1_match': new_match.user1_match,
+                        'user2_match': new_match.user2_match,
+                        'user_id1': str(new_match.user_id1),
+                        'user_id2': str(new_match.user_id2),
+                        }
+            
             return jsonify(
                 {
                     "code": 200,
-                    "data": new_match.json()
+                    "data": return_data
                 }
             ), 200
 
@@ -332,12 +354,12 @@ def create_match_accept(user_chooser_id,user_suggested_id):
 
             # only if match then populate datePref and dateIdea
             if ifMatch:                
- 
+
                 try:
-                    requests.post("http://match:26257/populate_dateprefs/{}".format(matchid))
+                    requests.post("http://match:5002/populate_dateprefs/{}".format(matchid))
 
                     try:
-                        requests.post("http://match:26257/date_recommendation/{}".format(matchid))
+                        requests.post("http://match:5002/date_recommendation/{}".format(matchid))
 
                     except:
                         return jsonify(
@@ -350,38 +372,91 @@ def create_match_accept(user_chooser_id,user_suggested_id):
                 except:
                     return jsonify(
                         {
-                            "code": 501,
-                            "message": "An error occurred creating the date preference. Please try again."
+                            "code": 502,
+                            "message": "An error occurred populating the date recommendation. Please try again."
                         }
-                    ), 501
-                
-            return_data = {
-                    'dateIdea': chooser_as_user2_match.dateIdea,
-                    'dateMatched': chooser_as_user2_match.dateMatched,
-                    'datePrefs': chooser_as_user2_match.dateMatched,
-                    'match_id': str(matchid),
-                    'user1_match': chooser_as_user2_match.user1_match,
-                    'user2_match': chooser_as_user2_match.user2_match,
-                    'user_id1': str(chooser_as_user2_match.user_id1),
-                    'user_id2': str(chooser_as_user2_match.user_id2),
-                    }
-
-            return jsonify(
-                {
-                    "code":     200,
-                    "data":     return_data,
-                    "matched":  ifMatch
-                }
-            ), 200
-
+                    ), 502
 
         except:
             return jsonify(
                 {
-                    "code": 500,
-                    "message": "An error occurred updating the match. Please try again."
+                    "code": 501,
+                    "message": "An error occurred creating the date preference. Please try again."
                 }
-            ), 500
+            ), 501
+                
+        return_data = {
+                'dateIdea': chooser_as_user2_match.dateIdea,
+                'dateMatched': chooser_as_user2_match.dateMatched,
+                'datePrefs': chooser_as_user2_match.datePrefs,
+                'match_id': str(matchid),
+                'user1_match': chooser_as_user2_match.user1_match,
+                'user2_match': chooser_as_user2_match.user2_match,
+                'user_id1': str(chooser_as_user2_match.user_id1),
+                'user_id2': str(chooser_as_user2_match.user_id2),
+                }
+
+        # only if both swiped right on each other then
+        ifMatch = False
+        if (chooser_as_user2_match.user2_match == True and chooser_as_user2_match.user1_match == True):
+            ifMatch = True
+            chooser_as_user2_match.dateMatched = datetime.today() #.strftime('%Y/%m/%d')
+
+            try:
+                session.commit()
+
+                # only if match then populate datePref and dateIdea
+                if ifMatch:                
+    
+                    try:
+                        requests.post("http://match:5002/populate_dateprefs/{}".format(matchid))
+
+                        try:
+                            requests.post("http://match:5002/date_recommendation/{}".format(matchid))
+
+                        except:
+                            return jsonify(
+                                {
+                                    "code": 502,
+                                    "message": "An error occurred populating the date recommendation. Please try again."
+                                }
+                            ), 502
+
+                    except:
+                        return jsonify(
+                            {
+                                "code": 501,
+                                "message": "An error occurred creating the date preference. Please try again."
+                            }
+                        ), 501
+                    
+                return_data = {
+                        'dateIdea': chooser_as_user2_match.dateIdea,
+                        'dateMatched': chooser_as_user2_match.dateMatched,
+                        'datePrefs': chooser_as_user2_match.datePrefs,
+                        'match_id': str(matchid),
+                        'user1_match': chooser_as_user2_match.user1_match,
+                        'user2_match': chooser_as_user2_match.user2_match,
+                        'user_id1': str(chooser_as_user2_match.user_id1),
+                        'user_id2': str(chooser_as_user2_match.user_id2),
+                        }
+
+                return jsonify(
+                    {
+                        "code":     200,
+                        "data":     return_data,
+                        "matched":  ifMatch
+                    }
+                ), 200
+
+
+            except:
+                return jsonify(
+                    {
+                        "code": 500,
+                        "message": "An error occurred updating the match. Please try again."
+                    }
+                ), 500
 
     else:
         new_match = Match(
@@ -393,10 +468,21 @@ def create_match_accept(user_chooser_id,user_suggested_id):
             session.add(new_match)
             session.commit()
 
+            return_data = {
+                        'dateIdea': new_match.dateIdea,
+                        'dateMatched': new_match.dateMatched,
+                        'datePrefs': new_match.datePrefs,
+                        'match_id': str(new_match.match_id),
+                        'user1_match': new_match.user1_match,
+                        'user2_match': new_match.user2_match,
+                        'user_id1': str(new_match.user_id1),
+                        'user_id2': str(new_match.user_id2),
+                        }
+            
             return jsonify(
                 {
                     "code":     201,
-                    "data":     new_match.json(),
+                    "data":     return_data,
                     "matched":  False
                 }
             ), 201
@@ -473,7 +559,7 @@ def populate_datepref(match_id):
     dateprefs = []
     
     for userid in [user1, user2]:
-        user_data = requests.get("http://localhost:26257/user/{}".format(userid))
+        user_data = requests.get("http://user:8000/user/{}".format(userid))
        
         if user_data.status_code == 200 and 'application/json' in user_data.headers.get('content-type'):
             json_data = user_data.json()['data']
@@ -523,7 +609,7 @@ def populate_dateIdea(match_id):
 
     for prefDate in datePrefs:
         # send a formdata for each of the match
-        url = f"http://localhost:5005/dateidea/{prefDate}"
+        url = f"http://dateideaapi:5005/dateidea/{prefDate}"
         response = requests.get(url)
 
         # Handle the API response
@@ -567,4 +653,4 @@ def populate_dateIdea(match_id):
 #     return dict(navbar="navbar.html")
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=26257, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)

@@ -34,7 +34,7 @@ def callback(ch, method, properties, body):
 
 @app.route('/get_queue_msg', methods=['GET'])
 def get_queue_msg():
-    connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+    connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
     channel = connection.channel()
 
     channel.queue_declare(queue='profiles', durable=True)
@@ -60,7 +60,7 @@ async def get_queue_async(user1id, num):
     result = get_compatibility(user1id, num) #response object
     json_result = result.get_json() #json object
     try:
-        RABBITMQ_HOST = os.environ.get('esd-rabbitmq', 'localhost')
+        RABBITMQ_HOST = os.environ.get('esd-rabbitmq', 'rabbitmq')
         port = 5672
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
         channel = connection.channel()

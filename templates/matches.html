@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Flirtify Home</title>
 
@@ -283,7 +284,7 @@
                                 let matchUser1 = this.matchesData[i]['user_id1'];
 
                                 // Checking for the user_id that is not the current user
-                                if (matchUser1 == this.user_chooser_name){
+                                if (matchUser1 == this.user_chooser_id){
                                     this.matchesInfo[this.matchesData[i]['user_id2']] = {};
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['dateIdea'] = dateIdea;
                                     this.matchesInfo[this.matchesData[i]['user_id2']]['daysMatched'] = daysMatched;
@@ -366,7 +367,7 @@
                     console.log("Go to message");
                     console.log('This is the match id: ' + matchId);
                     // window.location.href= "https://www.google.com.sg/"
-                    window.location.href = "http://localhost:5000/get_all_messages/" + matchId;
+                    window.location.href = "http://localhost:5010/get_all_messages/" + matchId;
                 },
                 selectItem(item) {
                     this.date = item;

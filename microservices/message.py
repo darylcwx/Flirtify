@@ -1,3 +1,4 @@
+from crypt import methods
 import json
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_cors import CORS
@@ -60,7 +61,7 @@ def index(match_id):
     session['user_id'] = 849811382203678721
     logged_in_user = session['user_id']
 
-    url = f"http://localhost:5002/match/{match_id}"
+    url = f"http://match:5002/match/{match_id}"
     match = requests.get(url).json()
     
     user_id1 = match['data']['user_id1']
@@ -71,7 +72,7 @@ def index(match_id):
     else:
         receiving_user = user_id1
 
-    url = f"http://localhost:8000/user/{str(receiving_user)}"
+    url = f"http://user:26257/user/{str(receiving_user)}"
     receiving_user_object = requests.get(url).json()
 
     receiving_user_id = receiving_user_object['data']['id']
@@ -89,7 +90,7 @@ def index(match_id):
                 'content': message.content
                 }
             all_match_messages.append(message_details)
-
+    print(all_match_messages)
     redirect_from = request.args.get('redirect_from')
     
     if redirect_from:
@@ -197,4 +198,4 @@ def drop_table():
     return 'Table dropped successfully.'
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5010, debug=True)

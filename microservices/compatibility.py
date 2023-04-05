@@ -64,15 +64,16 @@ async def get_queue_async(user1id, num):
         port = 5672
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST, port=port))
         channel = connection.channel()
-
+        print("step1")
         # Declare Exchange
         channel.exchange_declare(exchange='profiles_direct', exchange_type="direct", durable=True)
-
+        print("step2")
         # Declare and bind Queue 
         channel.queue_declare(queue='profiles', durable=True)
         channel.queue_bind(exchange='profiles_direct', queue='profiles') 
         for current_json_result in json_result['data']:
             channel.basic_publish(exchange='profiles_direct', routing_key='profiles', body=json.dumps(current_json_result), properties=pika.BasicProperties(delivery_mode = 2))
+        print("step3")
     except:
         return jsonify(
             { 

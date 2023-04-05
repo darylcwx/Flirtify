@@ -84,9 +84,9 @@ class Report(Base):
 
 session_db = Session()
 
-user_URL = 'http://localhost:26257/user/'
-message_URL = 'http://localhost:5000/api/get_all_messages/'
-match_URL = 'http://localhost:5002/match/'
+user_URL = 'http://user:26257/user/'
+message_URL = 'http://messages:5010/api/get_all_messages/'
+match_URL = 'http://match:5002/match/'
 
 @app.route("/add_report/<string:userid>/<string:otherid>/<string:matchid>")
 def add_report(userid, otherid, matchid):
@@ -145,7 +145,7 @@ def add_report(userid, otherid, matchid):
             print('user_result:', user_result)   
 
             try:
-                requests.post("http://127.0.0.1:5002/match/ban/{}".format(otherid))
+                requests.post("http://match:5002/match/ban/{}".format(otherid))
                 report_status = "Number of reports exceeded 5, user deleted"
 
             except:
@@ -249,4 +249,4 @@ def checkMsg(otherid, matchid):
 
 
 if __name__ == '__main__':
-    app.run(port=5015, debug=True)
+    app.run(host='0.0.0.0', port=5015, debug=True)

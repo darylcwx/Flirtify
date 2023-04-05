@@ -3,6 +3,10 @@ version: "3.8"
 volumes:
   rabbitmq_data:
 
+networks:
+  esd-net:
+    driver: bridge
+
 services:
 
   ####################################
@@ -12,11 +16,16 @@ services:
     image: rabbitmq:3-management
     hostname: esd-rabbit
     restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
     ports:
       - 5672:5672
       - 15672:15672
     volumes: 
       - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - esd-net
  
   ###################################
   # User: The User microservice
@@ -31,6 +40,8 @@ services:
       - 8000:26257
     environment:
       PYTHONUNBUFFERED: 1
+    networks:
+      - esd-net
 
   ###################################
   # Compatibility: The Compatibility microservice
@@ -42,11 +53,15 @@ services:
     image: jeremygmc/compat:esd
     depends_on:
       - user
+      - rabbitmq
     restart: always
     ports:
       - 7100:7100
     environment:
       PYTHONUNBUFFERED: 1
+      RABBITMQ_HOST: rabbitmq
+    networks:
+      - esd-net
 
   ###################################
   # Match: The Match microservice
@@ -58,11 +73,14 @@ services:
     image: jeremygmc/match:esd
     depends_on:
       - user
+      - rabbitmq
     restart: always
     ports:
-      - 5002:26257
+      - 5002:5002
     environment:
       PYTHONUNBUFFERED: 1
+    networks:
+      - esd-net
   
   ###################################
   # Date Idea API: The dateideaapi microservice
@@ -79,6 +97,8 @@ services:
       - 5005:5005
     environment:
       PYTHONUNBUFFERED: 1
+    networks:
+      - esd-net
 
   ###################################
   # File Report: The File Report microservice
@@ -95,6 +115,8 @@ services:
       - 5015:5015
     environment:
       PYTHONUNBUFFERED: 1
+    networks:
+      - esd-net
 
   ###################################
   # Messages: The Messages microservice
@@ -106,8 +128,11 @@ services:
     image: jeremygmc/messages:esd
     depends_on:
       - user
+      - rabbitmq
     restart: always
     ports:
-      - 5000:5000
+      - 5010:5010
     environment:
       PYTHONUNBUFFERED: 1
+    networks:
+      - esd-net
